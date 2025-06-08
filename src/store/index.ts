@@ -12,8 +12,12 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
-import auctionReducer from "./slices/auctionSlice";
 import authReducer from "./slices/authSlice";
+import artistsReducer from "./slices/artistsSlice";
+import artworksReducer from "./slices/artworksSlice";
+import contactsReducer from "./slices/contactsSlice";
+import staffReducer from "./slices/staffSlice";
+import eventsReducer from "./slices/eventsSlice";
 import galleryReducer from "./slices/gallerySlice";
 import uploadReducer from "./slices/uploadSlice";
 
@@ -25,8 +29,12 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  artists: artistsReducer,
+  artworks: artworksReducer,
+  contacts: contactsReducer,
+  staff: staffReducer,
+  events: eventsReducer,
   gallery: galleryReducer,
-  auction: auctionReducer,
   upload: uploadReducer,
 });
 

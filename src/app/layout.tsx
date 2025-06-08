@@ -11,8 +11,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "ArtCloud Gallery - Manage Your Art Collection",
-  description:
-    "Professional gallery management system for artists, curators, and art enthusiasts",
+  description: "Complete gallery management solution for artists, artworks, contacts, staff, and events",
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 export enum UserRole {
   ADMIN = "admin",
   GALLERY_OWNER = "gallery_owner",
-  ARTIST = "artist",
+  ARTIST = "ROLE_ARTIST",
   CUSTOMER = "customer",
 }
 

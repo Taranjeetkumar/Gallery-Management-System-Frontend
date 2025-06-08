@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import type React from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   fetchArtists, addArtist, updateArtist, deleteArtist, selectArtist,
@@ -53,7 +54,7 @@ export default function ArtistsPage() {
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validateForm()) return;
-    let avatar = artistForm.avatar;
+    const avatar = artistForm.avatar;
     if (avatarFile) {
       // TODO: INTEGRATE ARTIST AVATAR UPLOAD (call uploadFile here).
       // const result = await dispatch(uploadFile({ file: avatarFile }));

@@ -1,10 +1,14 @@
 export interface User {
-  id: string;
+  id: number;
+  username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
+  firstName?: string;
+  lastName?: string;
+  roles: UserRole;
+  isActive: boolean;
   avatar?: string;
+  phone?: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,22 +26,26 @@ export interface LoginCredentials {
 }
 
 export interface SignupData {
+  username: string;
   email: string;
   password: string;
-  username: string;
-  fullname: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   role: UserRole;
 }
 
 export interface AuthResponse {
   user: User;
   token: string;
-  refreshToken: string;
+  refreshToken?: string;
+  expiresIn: number;
 }
 
 export interface AuthState {
   user: User | null;
   token: string | null;
+  role: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -54,4 +62,13 @@ export interface SignupFormData {
   password: string;
   confirmPassword: string;
   role: UserRole;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordConfirm {
+  token: string;
+  newPassword: string;
 }

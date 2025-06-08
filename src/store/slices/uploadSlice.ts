@@ -1,309 +1,264 @@
-import { apiService } from "@/services/api";
-import type {
-  FileUpload,
-  FileUploadResponse,
-  UploadProgress,
-  UploadStatus,
-} from "@/types/upload";
-import {
-  type PayloadAction,
-  createAsyncThunk,
-  createSlice,
-} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import { uploadService } from "@/services/uploadService";
+
+export interface UploadProgress {
+  id: string;
+  fileName: string;
+  progress: number;
+  status: "pending" | "uploading" | "completed" | "error";
+  error?: string;
+  url?: string;
+}
+
+export interface UploadedFile {
+  id: string;
+  fileName: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
+  url: string;
+  thumbnailUrl?: string;
+  uploadedAt: string;
+  uploadedBy: {
+    id: number;
+    name: string;
+  };
+}
 
 interface UploadState {
-  uploads: FileUpload[];
+  uploads: UploadProgress[];
+  uploadedFiles: UploadedFile[];
   isUploading: boolean;
-  uploadProgress: Record<string, UploadProgress>;
   error: string | null;
+  totalFiles: number;
+  completedFiles: number;
+  failedFiles: number;
 }
 
 const initialState: UploadState = {
   uploads: [],
+  uploadedFiles: [],
   isUploading: false,
-  uploadProgress: {},
   error: null,
+  totalFiles: 0,
+  completedFiles: 0,
+  failedFiles: 0,
 };
 
-// Async thunk for file upload with progress tracking
+// Async thunks
 export const uploadFile = createAsyncThunk(
   "upload/uploadFile",
   async (
-    {
-      file,
-      additionalData,
-      onProgress,
-    }: {
-      file: File;
-      additionalData?: Record<string, any>;
-      onProgress?: (progress: UploadProgress) => void;
-    },
-    { rejectWithValue, dispatch },
+    { file, onProgress }: { file: File; onProgress?: (progress: number) => void },
+    { rejectWithValue, dispatch }
   ) => {
     try {
-      const fileId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const uploadId = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create upload entry
-      dispatch(
-        addUpload({
-          id: fileId,
-          file,
-          progress: 0,
-          status: UploadStatus.PENDING,
-          createdAt: new Date().toISOString(),
-        }),
-      );
+      // Start upload
+      dispatch(startUpload({
+        id: uploadId,
+        fileName: file.name
+      }));
 
-      // Update status to uploading
-      dispatch(
-        updateUploadStatus({ id: fileId, status: UploadStatus.UPLOADING }),
-      );
+      const response = await uploadService.uploadFile(file, (progress) => {
+        dispatch(updateUploadProgress({ id: uploadId, progress }));
+        onProgress?.(progress);
+      });
 
-      // API INTEGRATION POINT:
-      // POST /api/upload/file
-      // Content-Type: multipart/form-data
-      // Body: FormData with file and additional data
-      // Expected response: FileUploadResponse
-      const response = await apiService.uploadFile<FileUploadResponse>(
-        "/upload/file",
-        file,
-        additionalData,
-      );
-
-      // Update upload as completed
-      dispatch(
-        updateUploadStatus({ id: fileId, status: UploadStatus.COMPLETED }),
-      );
-      dispatch(updateUploadUrl({ id: fileId, url: response.url }));
-
-      return { fileId, response };
-    } catch (error: unknown) {
-      const errorMessage =
-        (error as any)?.response?.data?.message || "Upload failed";
-      return rejectWithValue(errorMessage);
+      dispatch(completeUpload({ id: uploadId, url: response.url }));
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Upload failed");
     }
-  },
+  }
 );
 
 export const uploadMultipleFiles = createAsyncThunk(
   "upload/uploadMultipleFiles",
-  async (files: File[], { dispatch, rejectWithValue }) => {
-    try {
-      const uploadPromises = files.map((file) =>
-        dispatch(uploadFile({ file })),
-      );
-
-      const results = await Promise.allSettled(uploadPromises);
-      return results;
-    } catch (error: unknown) {
-      return rejectWithValue("Failed to upload multiple files");
-    }
-  },
-);
-
-export const uploadArtworkImage = createAsyncThunk(
-  "upload/uploadArtworkImage",
   async (
-    { file, artworkData }: { file: File; artworkData: Record<string, any> },
-    { rejectWithValue },
+    { files, onProgress }: { files: File[]; onProgress?: (progress: number) => void },
+    { rejectWithValue, dispatch }
   ) => {
     try {
-      // API INTEGRATION POINT:
-      // POST /api/upload/artwork
-      // Content-Type: multipart/form-data
-      // Body: FormData with image file and artwork metadata
-      // Expected response: FileUploadResponse with artwork-specific fields
-      const response = await apiService.uploadFile<FileUploadResponse>(
-        "/upload/artwork",
-        file,
-        artworkData,
-      );
+      const uploadPromises = files.map((file, index) => {
+        const uploadId = `upload_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`;
 
-      return response;
-    } catch (error: unknown) {
-      return rejectWithValue(
-        (error as any)?.response?.data?.message || "Artwork upload failed",
-      );
+        dispatch(startUpload({
+          id: uploadId,
+          fileName: file.name
+        }));
+
+        return uploadService.uploadFile(file, (progress) => {
+          dispatch(updateUploadProgress({ id: uploadId, progress }));
+        }).then(response => {
+          dispatch(completeUpload({ id: uploadId, url: response.url }));
+          return response;
+        }).catch(error => {
+          dispatch(failUpload({ id: uploadId, error: error.message }));
+          throw error;
+        });
+      });
+
+      const results = await Promise.allSettled(uploadPromises);
+      const successful = results.filter(result => result.status === 'fulfilled');
+      const failed = results.filter(result => result.status === 'rejected');
+      onProgress?.(100);
+
+      return {
+        successful: successful.map(result => (result as PromiseFulfilledResult<any>).value),
+        failed: failed.length,
+        total: files.length
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Multiple upload failed");
     }
-  },
+  }
+);
+
+export const fetchUploadedFiles = createAsyncThunk(
+  "upload/fetchUploadedFiles",
+  async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    mimeType?: string;
+  }, { rejectWithValue }) => {
+    try {
+      return await uploadService.getUploadedFiles(params);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch uploaded files");
+    }
+  }
 );
 
 export const deleteUploadedFile = createAsyncThunk(
   "upload/deleteUploadedFile",
   async (fileId: string, { rejectWithValue }) => {
     try {
-      // API INTEGRATION POINT:
-      // DELETE /api/upload/file/{fileId}
-      // Expected response: { success: boolean, message: string }
-      await apiService.delete(`/upload/file/${fileId}`);
+      await uploadService.deleteFile(fileId);
       return fileId;
-    } catch (error: unknown) {
-      return rejectWithValue(
-        (error as any)?.response?.data?.message || "Failed to delete file",
-      );
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to delete file");
     }
-  },
+  }
 );
 
 const uploadSlice = createSlice({
   name: "upload",
   initialState,
   reducers: {
-    addUpload: (state, action: PayloadAction<FileUpload>) => {
-      state.uploads.push(action.payload);
+    startUpload: (state, action: PayloadAction<{ id: string; fileName: string }>) => {
+      const upload: UploadProgress = {
+        id: action.payload.id,
+        fileName: action.payload.fileName,
+        progress: 0,
+        status: "pending",
+      };
+      state.uploads.push(upload);
+      state.totalFiles += 1;
+      state.isUploading = true;
     },
-    removeUpload: (state, action: PayloadAction<string>) => {
-      state.uploads = state.uploads.filter(
-        (upload) => upload.id !== action.payload,
-      );
-      delete state.uploadProgress[action.payload];
-    },
-    updateUploadProgress: (
-      state,
-      action: PayloadAction<{ id: string; progress: number }>,
-    ) => {
-      const { id, progress } = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
+    updateUploadProgress: (state, action: PayloadAction<{ id: string; progress: number }>) => {
+      const upload = state.uploads.find(u => u.id === action.payload.id);
       if (upload) {
-        upload.progress = progress;
+        upload.progress = action.payload.progress;
+        upload.status = "uploading";
+      }
+    },
+    completeUpload: (state, action: PayloadAction<{ id: string; url: string }>) => {
+      const upload = state.uploads.find(u => u.id === action.payload.id);
+      if (upload) {
+        upload.progress = 100;
+        upload.status = "completed";
+        upload.url = action.payload.url;
+        state.completedFiles += 1;
       }
 
-      // Update progress tracking
-      if (!state.uploadProgress[id]) {
-        state.uploadProgress[id] = { loaded: 0, total: 0, percentage: 0 };
+      // Check if all uploads are complete
+      const activeUploads = state.uploads.filter(u => u.status === "uploading" || u.status === "pending");
+      if (activeUploads.length === 0) {
+        state.isUploading = false;
       }
-      state.uploadProgress[id].percentage = progress;
     },
-    updateUploadStatus: (
-      state,
-      action: PayloadAction<{ id: string; status: UploadStatus }>,
-    ) => {
-      const { id, status } = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
+    failUpload: (state, action: PayloadAction<{ id: string; error: string }>) => {
+      const upload = state.uploads.find(u => u.id === action.payload.id);
       if (upload) {
-        upload.status = status;
+        upload.status = "error";
+        upload.error = action.payload.error;
+        state.failedFiles += 1;
+      }
+
+      // Check if all uploads are complete
+      const activeUploads = state.uploads.filter(u => u.status === "uploading" || u.status === "pending");
+      if (activeUploads.length === 0) {
+        state.isUploading = false;
       }
     },
-    updateUploadUrl: (
-      state,
-      action: PayloadAction<{ id: string; url: string }>,
-    ) => {
-      const { id, url } = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
-      if (upload) {
-        upload.url = url;
-      }
-    },
-    updateUploadError: (
-      state,
-      action: PayloadAction<{ id: string; error: string }>,
-    ) => {
-      const { id, error } = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
-      if (upload) {
-        upload.error = error;
-        upload.status = UploadStatus.FAILED;
-      }
-    },
-    clearError: (state) => {
-      state.error = null;
+    removeUpload: (state, action: PayloadAction<string>) => {
+      state.uploads = state.uploads.filter(upload => upload.id !== action.payload);
     },
     clearUploads: (state) => {
       state.uploads = [];
-      state.uploadProgress = {};
+      state.isUploading = false;
+      state.totalFiles = 0;
+      state.completedFiles = 0;
+      state.failedFiles = 0;
     },
-    clearCompletedUploads: (state) => {
-      state.uploads = state.uploads.filter(
-        (upload) =>
-          upload.status !== UploadStatus.COMPLETED &&
-          upload.status !== UploadStatus.FAILED,
-      );
-    },
-    cancelUpload: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
-      if (upload && upload.status === UploadStatus.UPLOADING) {
-        upload.status = UploadStatus.CANCELLED;
-      }
-    },
-    retryUpload: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const upload = state.uploads.find((u) => u.id === id);
-      if (upload && upload.status === UploadStatus.FAILED) {
-        upload.status = UploadStatus.PENDING;
-        upload.progress = 0;
-        upload.error = undefined;
-      }
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     // Upload file
     builder
       .addCase(uploadFile.pending, (state) => {
-        state.isUploading = true;
         state.error = null;
       })
-      .addCase(uploadFile.fulfilled, (state, action) => {
-        state.isUploading = false;
-        const { fileId } = action.payload;
-        const upload = state.uploads.find((u) => u.id === fileId);
-        if (upload) {
-          upload.progress = 100;
-        }
+      .addCase(uploadFile.fulfilled, (state) => {
+        // Success handled by completeUpload action
       })
       .addCase(uploadFile.rejected, (state, action) => {
-        state.isUploading = false;
         state.error = action.payload as string;
+        state.isUploading = false;
       });
 
     // Upload multiple files
     builder
       .addCase(uploadMultipleFiles.pending, (state) => {
-        state.isUploading = true;
-      })
-      .addCase(uploadMultipleFiles.fulfilled, (state) => {
-        state.isUploading = false;
-      })
-      .addCase(uploadMultipleFiles.rejected, (state, action) => {
-        state.isUploading = false;
-        state.error = action.payload as string;
-      });
-
-    // Upload artwork image
-    builder
-      .addCase(uploadArtworkImage.pending, (state) => {
-        state.isUploading = true;
         state.error = null;
       })
-      .addCase(uploadArtworkImage.fulfilled, (state) => {
+      .addCase(uploadMultipleFiles.fulfilled, (state, action) => {
         state.isUploading = false;
+        // Results handled by individual upload actions
       })
-      .addCase(uploadArtworkImage.rejected, (state, action) => {
-        state.isUploading = false;
+      .addCase(uploadMultipleFiles.rejected, (state, action) => {
         state.error = action.payload as string;
+        state.isUploading = false;
+      });
+
+    // Fetch uploaded files
+    builder
+      .addCase(fetchUploadedFiles.fulfilled, (state, action) => {
+        state.uploadedFiles = action.payload.files;
       });
 
     // Delete uploaded file
-    builder.addCase(deleteUploadedFile.fulfilled, (state, action) => {
-      const fileId = action.payload;
-      state.uploads = state.uploads.filter((upload) => upload.id !== fileId);
-      delete state.uploadProgress[fileId];
-    });
+    builder
+      .addCase(deleteUploadedFile.fulfilled, (state, action) => {
+        state.uploadedFiles = state.uploadedFiles.filter(file => file.id !== action.payload);
+      });
   },
 });
 
 export const {
-  addUpload,
-  removeUpload,
+  startUpload,
   updateUploadProgress,
-  updateUploadStatus,
-  updateUploadUrl,
-  updateUploadError,
-  clearError,
+  completeUpload,
+  failUpload,
+  removeUpload,
   clearUploads,
-  clearCompletedUploads,
-  cancelUpload,
-  retryUpload,
+  clearError,
 } = uploadSlice.actions;
 
 export default uploadSlice.reducer;

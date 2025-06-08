@@ -6,7 +6,11 @@ import { UserRole } from "@/types/auth";
 import {
   AccountCircle,
   Add,
+  Assessment,
+  ContactMail,
   Dashboard,
+  Event,
+  Group,
   Image,
   Logout,
   Menu as MenuIcon,
@@ -53,8 +57,13 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   { label: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-  { label: "Galleries", icon: <PhotoLibrary />, path: "/galleries" },
+  { label: "Artists", icon: <People />, path: "/artists" },
   { label: "Artworks", icon: <Image />, path: "/artworks" },
+  { label: "Galleries", icon: <PhotoLibrary />, path: "/galleries" },
+  { label: "Contacts", icon: <ContactMail />, path: "/contacts" },
+  { label: "Staff", icon: <Group />, path: "/staff" },
+  { label: "Events", icon: <Event />, path: "/events" },
+  { label: "Reports", icon: <Assessment />, path: "/reports" },
   {
     label: "Users",
     icon: <People />,

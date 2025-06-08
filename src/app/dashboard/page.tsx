@@ -3,12 +3,9 @@
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  createGallery,
-  fetchArtworks,
-  fetchGalleries,
-} from "@/store/slices/gallerySlice";
-import { UserRole } from "@/types/auth";
+import { createGallery, fetchGalleries } from "@/store/slices/gallerySlice";
+import { fetchArtworks } from "@/store/slices/artworksSlice";
+import { UserRole, roleLabels } from "@/types/user";
 import type { Artwork, CreateGalleryData, Gallery } from "@/types/gallery";
 import {
   Add,
@@ -51,6 +48,7 @@ import {
 } from "@mui/material";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { profile } from "console";
 
 interface StatCardProps {
   title: string;
@@ -155,9 +153,11 @@ const RecentItem: React.FC<RecentItemProps> = ({
 
 export default function DashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
-  const { galleries, artworks, isLoading, error } = useAppSelector(
-    (state) => state.gallery,
+  const { galleries, isLoading, error } = useAppSelector(
+    (state) => state.gallery
   );
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { artworks } = useAppSelector((state) => state.artworks);
   const dispatch = useAppDispatch();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -168,9 +168,15 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    dispatch(fetchGalleries());
+    if (user) {
+      // only fetch galleries for non-artist roles
+      if (user.roles !== UserRole.Artist) {
+        dispatch(fetchGalleries());
+      }
+    }
+    // always fetch artworks
     dispatch(fetchArtworks());
-  }, [dispatch]);
+  }, [dispatch, user]);
 
   const handleCreateGallery = async () => {
     if (newGallery.name && newGallery.description) {
@@ -244,7 +250,7 @@ export default function DashboardPage() {
             title: "Total Views",
             value: userArtworks.reduce(
               (sum, a) => sum + (a.artworkCount || 0),
-              0,
+              0
             ),
             icon: <People />,
             color: "#ed6c02",
@@ -282,7 +288,9 @@ export default function DashboardPage() {
           },
           {
             title: "Total Revenue",
-            value: `${userArtworks.filter((a) => a.price).reduce((sum, a) => sum + (a.price || 0), 0)}`,
+            value: `${userArtworks
+              .filter((a) => a.price)
+              .reduce((sum, a) => sum + (a.price || 0), 0)}`,
             icon: <TrendingUp />,
             color: "#9c27b0",
             change: "+12",
@@ -310,7 +318,14 @@ export default function DashboardPage() {
           },
           {
             title: "Avg Price",
-            value: `${Math.round(artworks.filter((a) => a.price).reduce((sum, a, _, arr) => sum + (a.price || 0) / arr.length, 0))}`,
+            value: `${Math.round(
+              artworks
+                .filter((a) => a.price)
+                .reduce(
+                  (sum, a, _, arr) => sum + (a.price || 0) / arr.length,
+                  0
+                )
+            )}`,
             icon: <TrendingUp />,
             color: "#9c27b0",
           },
@@ -387,341 +402,312 @@ export default function DashboardPage() {
     }
   };
 
+  if (!isAuthenticated) {
+    return <ProtectedRoute />;
+  }
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <Container maxWidth="xl">
-          {/* Welcome Section */}
-          <Box mb={4}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {getWelcomeMessage()}, {user?.firstName}!
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Welcome to your ArtCloud dashboard. Here's what's happening with
-              your galleries today.
-            </Typography>
+        {isLoading && (
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
           </Box>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {!isLoading && !error && user ? (
+          <>
+            {/* Welcome Section */}
+            <Box mb={4}>
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                {getWelcomeMessage()}, {user?.firstName}!
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Welcome to your ArtCloud dashboard. Here's what's happening with
+                your galleries today.
+              </Typography>
+            </Box>
 
-          {/* Statistics Cards */}
-          <Grid container spacing={3} mb={4}>
-            {getRoleBasedStats().map((stat) => (
-              <Grid item xs={12} sm={6} lg={3} key={stat.title}>
-                <StatCard {...stat} />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Grid container spacing={3}>
-            {/* Quick Actions */}
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Quick Actions
-                  </Typography>
-                  <Box display="flex" flexDirection="column" gap={2}>
-                    {getQuickActions().map((action) => (
-                      <Button
-                        key={action.label}
-                        variant="outlined"
-                        startIcon={action.icon}
-                        fullWidth
-                        onClick={action.action}
-                        sx={{ justifyContent: "flex-start" }}
-                      >
-                        {action.label}
-                      </Button>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
+            {/* Statistics Cards */}
+            <Grid container spacing={3} mb={4}>
+              {getRoleBasedStats().map((stat) => (
+                <Grid item xs={12} sm={6} lg={3} key={stat.title}>
+                  <StatCard {...stat} />
+                </Grid>
+              ))}
             </Grid>
 
-            {/* Recent Galleries */}
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    mb={2}
-                  >
-                    <Typography variant="h6" fontWeight="bold">
-                      {user?.role === UserRole.ADMIN
-                        ? "Latest Galleries"
-                        : "My Recent Galleries"}
+            <Grid container spacing={3}>
+              {/* Quick Actions */}
+              <Grid item xs={12} md={4}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                      Quick Actions
                     </Typography>
-                    <Button
-                      size="small"
-                      onClick={() => window.open("/galleries", "_blank")}
-                    >
-                      View All
-                    </Button>
-                  </Box>
-                  {isLoading ? (
-                    <Box display="flex" justifyContent="center" p={3}>
-                      <CircularProgress />
+                    <Box display="flex" flexDirection="column" gap={2}>
+                      {getQuickActions().map((action) => (
+                        <Button
+                          key={action.label}
+                          variant="outlined"
+                          startIcon={action.icon}
+                          fullWidth
+                          onClick={action.action}
+                          sx={{ justifyContent: "flex-start" }}
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
                     </Box>
-                  ) : error ? (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                      {error}
-                    </Alert>
-                  ) : (
-                    <Box>
-                      {galleries
-                        .filter((g) =>
-                          user?.role === UserRole.ADMIN
-                            ? true
-                            : g.ownerId === user?.id,
-                        )
-                        .slice(0, 3)
-                        .map((gallery) => (
-                          <RecentItem
-                            key={gallery.id}
-                            title={gallery.name}
-                            subtitle={`${gallery.artworkCount} artworks • ${gallery.isPublic ? "Public" : "Private"}`}
-                            image={gallery.coverImage}
-                            status={gallery.isPublic ? "Published" : "Private"}
-                            onView={() =>
-                              window.open(`/galleries/${gallery.id}`, "_blank")
-                            }
-                            onEdit={() =>
-                              window.open(
-                                `/galleries/${gallery.id}/edit`,
-                                "_blank",
-                              )
-                            }
-                          />
-                        ))}
-                      {galleries.filter((g) =>
-                        user?.role === UserRole.ADMIN
-                          ? true
-                          : g.ownerId === user?.id,
-                      ).length === 0 && (
-                        <Box textAlign="center" py={3}>
-                          <Typography color="text.secondary">
-                            No galleries yet. Create your first gallery to get
-                            started!
-                          </Typography>
-                          <Button
-                            variant="outlined"
-                            startIcon={<Add />}
-                            onClick={() => setCreateDialogOpen(true)}
-                            sx={{ mt: 2 }}
-                          >
-                            Create Gallery
-                          </Button>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-          {/* Gallery Grid Section */}
-          {user?.role !== UserRole.VIEWER && (
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12}>
+              {/* Recent Galleries */}
+              <Grid item xs={12} md={8}>
                 <Card>
                   <CardContent>
                     <Box
                       display="flex"
                       justifyContent="space-between"
                       alignItems="center"
-                      mb={3}
+                      mb={2}
                     >
                       <Typography variant="h6" fontWeight="bold">
-                        Gallery Overview
+                        {user?.role === UserRole.ADMIN
+                          ? "Latest Galleries"
+                          : "My Recent Galleries"}
                       </Typography>
-                      <Box display="flex" gap={1}>
-                        <Button
-                          variant="outlined"
-                          startIcon={<Add />}
-                          onClick={() => setCreateDialogOpen(true)}
-                        >
-                          Create Gallery
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          startIcon={<PhotoLibrary />}
-                          onClick={() => window.open("/galleries", "_blank")}
-                        >
-                          Browse All
-                        </Button>
-                      </Box>
+                      <Button
+                        size="small"
+                        onClick={() => window.open("/galleries", "_blank")}
+                      >
+                        View All
+                      </Button>
                     </Box>
-
                     {isLoading ? (
-                      <Grid container spacing={2}>
-                        {Array.from({ length: 3 }).map((_, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Card>
-                              <Box sx={{ height: 140, bgcolor: "grey.100" }} />
-                              <CardContent sx={{ p: 2 }}>
-                                <Box
-                                  sx={{
-                                    height: 20,
-                                    bgcolor: "grey.200",
-                                    mb: 1,
-                                    borderRadius: 1,
-                                  }}
-                                />
-                                <Box
-                                  sx={{
-                                    height: 16,
-                                    bgcolor: "grey.100",
-                                    borderRadius: 1,
-                                    width: "70%",
-                                  }}
-                                />
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
+                      <Box display="flex" justifyContent="center" p={3}>
+                        <CircularProgress />
+                      </Box>
+                    ) : error ? (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                      </Alert>
                     ) : (
-                      <Grid container spacing={2}>
+                      <Box>
                         {galleries
                           .filter((g) =>
                             user?.role === UserRole.ADMIN
                               ? true
-                              : g.ownerId === user?.id,
+                              : g.ownerId === user?.id
                           )
-                          .slice(0, 6)
+                          .slice(0, 3)
                           .map((gallery) => (
-                            <Grid item xs={12} sm={6} md={4} key={gallery.id}>
-                              <Card
-                                sx={{
-                                  cursor: "pointer",
-                                  transition: "transform 0.2s, boxShadow 0.2s",
-                                  "&:hover": {
-                                    transform: "translateY(-2px)",
-                                    boxShadow: 3,
-                                  },
-                                }}
-                                onClick={() =>
-                                  window.open(
-                                    `/galleries/${gallery.id}`,
-                                    "_blank",
-                                  )
-                                }
-                              >
-                                <CardMedia
-                                  component="img"
-                                  height="140"
-                                  image={
-                                    gallery.coverImage ||
-                                    "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop"
-                                  }
-                                  alt={gallery.name}
-                                />
-                                <CardContent sx={{ p: 2 }}>
-                                  <Box
-                                    display="flex"
-                                    justifyContent="space-between"
-                                    alignItems="start"
-                                    mb={1}
-                                  >
-                                    <Typography
-                                      variant="subtitle1"
-                                      fontWeight="medium"
-                                      noWrap
-                                    >
-                                      {gallery.name}
-                                    </Typography>
-                                    <Chip
-                                      size="small"
-                                      label={
-                                        gallery.isPublic ? "Public" : "Private"
-                                      }
-                                      color={
-                                        gallery.isPublic ? "success" : "default"
-                                      }
-                                    />
-                                  </Box>
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    noWrap
-                                  >
-                                    {gallery.artworkCount}{" "}
-                                    {gallery.artworkCount === 1
-                                      ? "artwork"
-                                      : "artworks"}
-                                  </Typography>
-                                </CardContent>
-                              </Card>
-                            </Grid>
+                            <RecentItem
+                              key={gallery.id}
+                              title={gallery.name}
+                              subtitle={`${gallery.artworkCount} artworks • ${
+                                gallery.isPublic ? "Public" : "Private"
+                              }`}
+                              image={gallery.coverImage}
+                              status={
+                                gallery.isPublic ? "Published" : "Private"
+                              }
+                              onView={() =>
+                                window.open(
+                                  `/galleries/${gallery.id}`,
+                                  "_blank"
+                                )
+                              }
+                              onEdit={() =>
+                                window.open(
+                                  `/galleries/${gallery.id}/edit`,
+                                  "_blank"
+                                )
+                              }
+                            />
                           ))}
-                      </Grid>
+                        {galleries.filter((g) =>
+                          user?.role === UserRole.ADMIN
+                            ? true
+                            : g.ownerId === user?.id
+                        ).length === 0 && (
+                          <Box textAlign="center" py={3}>
+                            <Typography color="text.secondary">
+                              No galleries yet. Create your first gallery to get
+                              started!
+                            </Typography>
+                            <Button
+                              variant="outlined"
+                              startIcon={<Add />}
+                              onClick={() => setCreateDialogOpen(true)}
+                              sx={{ mt: 2 }}
+                            >
+                              Create Gallery
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
               </Grid>
             </Grid>
-          )}
-        </Container>
 
-        {/* Create Gallery Dialog */}
-        <Dialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Create New Gallery</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Gallery Name"
-              fullWidth
-              variant="outlined"
-              value={newGallery.name}
-              onChange={(e) =>
-                setNewGallery({ ...newGallery, name: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              margin="dense"
-              label="Description"
-              fullWidth
-              multiline
-              rows={3}
-              variant="outlined"
-              value={newGallery.description}
-              onChange={(e) =>
-                setNewGallery({ ...newGallery, description: e.target.value })
-              }
-              sx={{ mb: 2 }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={newGallery.isPublic}
-                  onChange={(e) =>
-                    setNewGallery({ ...newGallery, isPublic: e.target.checked })
-                  }
-                />
-              }
-              label="Make this gallery public"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-            <Button
-              onClick={handleCreateGallery}
-              variant="contained"
-              disabled={!newGallery.name || !newGallery.description}
-            >
-              Create Gallery
-            </Button>
-          </DialogActions>
-        </Dialog>
+            {/* Gallery Grid Section */}
+            {user?.role !== UserRole.VIEWER && (
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mb={3}
+                      >
+                        <Typography variant="h6" fontWeight="bold">
+                          Gallery Overview
+                        </Typography>
+                        <Box display="flex" gap={1}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<Add />}
+                            onClick={() => setCreateDialogOpen(true)}
+                          >
+                            Create Gallery
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            startIcon={<PhotoLibrary />}
+                            onClick={() => window.open("/galleries", "_blank")}
+                          >
+                            Browse All
+                          </Button>
+                        </Box>
+                      </Box>
+
+                      {isLoading ? (
+                        <Grid container spacing={2}>
+                          {Array.from({ length: 3 }).map((_, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={index}>
+                              <Card>
+                                <Box
+                                  sx={{ height: 140, bgcolor: "grey.100" }}
+                                />
+                                <CardContent sx={{ p: 2 }}>
+                                  <Box
+                                    sx={{
+                                      height: 20,
+                                      bgcolor: "grey.200",
+                                      mb: 1,
+                                      borderRadius: 1,
+                                    }}
+                                  />
+                                  <Box
+                                    sx={{
+                                      height: 16,
+                                      bgcolor: "grey.100",
+                                      borderRadius: 1,
+                                      width: "70%",
+                                    }}
+                                  />
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      ) : (
+                        <Grid container spacing={2}>
+                          {galleries
+                            .filter((g) =>
+                              user?.role === UserRole.ADMIN
+                                ? true
+                                : g.ownerId === user?.id
+                            )
+                            .slice(0, 6)
+                            .map((gallery) => (
+                              <Grid item xs={12} sm={6} md={4} key={gallery.id}>
+                                <Card
+                                  sx={{
+                                    cursor: "pointer",
+                                    transition:
+                                      "transform 0.2s, boxShadow 0.2s",
+                                    "&:hover": {
+                                      transform: "translateY(-2px)",
+                                      boxShadow: 3,
+                                    },
+                                  }}
+                                  onClick={() =>
+                                    window.open(
+                                      `/galleries/${gallery.id}`,
+                                      "_blank"
+                                    )
+                                  }
+                                >
+                                  <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={
+                                      gallery.coverImage ||
+                                      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop"
+                                    }
+                                    alt={gallery.name}
+                                  />
+                                  <CardContent sx={{ p: 2 }}>
+                                    <Box
+                                      display="flex"
+                                      justifyContent="space-between"
+                                      alignItems="start"
+                                      mb={1}
+                                    >
+                                      <Typography
+                                        variant="subtitle1"
+                                        fontWeight="medium"
+                                        noWrap
+                                      >
+                                        {gallery.name}
+                                      </Typography>
+                                      <Chip
+                                        size="small"
+                                        label={
+                                          gallery.isPublic
+                                            ? "Public"
+                                            : "Private"
+                                        }
+                                        color={
+                                          gallery.isPublic
+                                            ? "success"
+                                            : "default"
+                                        }
+                                      />
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                      noWrap
+                                    >
+                                      {gallery.artworkCount}{" "}
+                                      {gallery.artworkCount === 1
+                                        ? "artwork"
+                                        : "artworks"}
+                                    </Typography>
+                                  </CardContent>
+                                </Card>
+                              </Grid>
+                            ))}
+                        </Grid>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+          </>
+        ) : null}
       </DashboardLayout>
     </ProtectedRoute>
   );

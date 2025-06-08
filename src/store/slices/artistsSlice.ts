@@ -1,85 +1,140 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import { artistService } from "@/services/artistService";
 
 export interface Artist {
-  id: string;
+  id: number;
   name: string;
-  birthplace: string;
-  age: number;
-  style: string;
-  bio?: string;
-  avatar?: string;
-  artworks?: any[]; // Optional, filled when viewing artist details
+  email: string;
+  phone?: string;
+  birthplace?: string;
+  age?: number;
+  artisticStyle: string;
+  biography?: string;
+  profileImage?: string;
+  socialLinks?: {
+    website?: string;
+    instagram?: string;
+    twitter?: string;
+  };
+  specializations: string[];
+  isActive: boolean;
+  totalArtworks: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArtistFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  birthplace?: string;
+  age?: number;
+  artisticStyle: string;
+  biography?: string;
+  specializations: string[];
+  socialLinks?: {
+    website?: string;
+    instagram?: string;
+    twitter?: string;
+  };
 }
 
 interface ArtistsState {
   artists: Artist[];
-  selectedArtist: Artist | null;
+  currentArtist: Artist | null;
   isLoading: boolean;
   error: string | null;
+  searchQuery: string;
+  filters: {
+    artisticStyle: string;
+    specialization: string;
+    isActive: boolean | null;
+  };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 const initialState: ArtistsState = {
   artists: [],
-  selectedArtist: null,
+  currentArtist: null,
   isLoading: false,
   error: null,
+  searchQuery: "",
+  filters: {
+    artisticStyle: "",
+    specialization: "",
+    isActive: null,
+  },
+  pagination: {
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+  },
 };
 
-// FETCH ALL
+// Async thunks
 export const fetchArtists = createAsyncThunk(
-  "artists/fetchAll",
-  async (_, { rejectWithValue }) => {
+  "artists/fetchArtists",
+  async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    filters?: Partial<ArtistsState["filters"]>;
+  }, { rejectWithValue }) => {
     try {
-      // TODO: INTEGRATE API HERE (fetch all artists)
-      // const response = await apiService.get("/artists");
-      // return response.data;
-      return [];
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+      return await artistService.getArtists(params);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch artists");
     }
   }
 );
 
-// ADD
-export const addArtist = createAsyncThunk(
-  "artists/addArtist",
-  async (artist: Omit<Artist, "id">, { rejectWithValue }) => {
+export const fetchArtistById = createAsyncThunk(
+  "artists/fetchArtistById",
+  async (id: number, { rejectWithValue }) => {
     try {
-      // TODO: INTEGRATE API HERE (add artist)
-      // const response = await apiService.post("/artists", artist);
-      // return response.data;
-      return { ...artist, id: Date.now().toString() };
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+      return await artistService.getArtistById(id);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch artist");
     }
   }
 );
 
-// UPDATE
+export const createArtist = createAsyncThunk(
+  "artists/createArtist",
+  async (artistData: ArtistFormData, { rejectWithValue }) => {
+    try {
+      return await artistService.createArtist(artistData);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to create artist");
+    }
+  }
+);
+
 export const updateArtist = createAsyncThunk(
   "artists/updateArtist",
-  async (artist: Artist, { rejectWithValue }) => {
+  async ({ id, data }: { id: number; data: Partial<ArtistFormData> }, { rejectWithValue }) => {
     try {
-      // TODO: INTEGRATE API HERE (update artist)
-      // const response = await apiService.put(`/artists/${artist.id}`, artist);
-      // return response.data;
-      return artist;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+      return await artistService.updateArtist(id, data);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to update artist");
     }
   }
 );
 
-// DELETE
 export const deleteArtist = createAsyncThunk(
   "artists/deleteArtist",
-  async (id: string, { rejectWithValue }) => {
+  async (id: number, { rejectWithValue }) => {
     try {
-      // TODO: INTEGRATE API HERE (delete artist)
-      // await apiService.delete(`/artists/${id}`);
+      await artistService.deleteArtist(id);
       return id;
-    } catch (err: any) {
-      return rejectWithValue(err.message);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to delete artist");
     }
   }
 );
@@ -88,41 +143,128 @@ const artistsSlice = createSlice({
   name: "artists",
   initialState,
   reducers: {
-    selectArtist(state, action: PayloadAction<Artist | null>) {
-      state.selectedArtist = action.payload;
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
     },
-    clearArtistsError(state) {
+    setFilters: (state, action: PayloadAction<Partial<ArtistsState["filters"]>>) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+    setPagination: (state, action: PayloadAction<Partial<ArtistsState["pagination"]>>) => {
+      state.pagination = { ...state.pagination, ...action.payload };
+    },
+    clearCurrentArtist: (state) => {
+      state.currentArtist = null;
+    },
+    clearError: (state) => {
       state.error = null;
-    }
+    },
+    clearFilters: (state) => {
+      state.filters = initialState.filters;
+      state.searchQuery = "";
+    },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
+    // Fetch artists
     builder
-      .addCase(fetchArtists.pending, state => {
+      .addCase(fetchArtists.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchArtists.fulfilled, (state, action: PayloadAction<Artist[]>) => {
+      .addCase(fetchArtists.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.artists = action.payload;
+        state.artists = action.payload.artists;
+        state.pagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+          totalPages: action.payload.totalPages,
+        };
       })
       .addCase(fetchArtists.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-      })
-      .addCase(addArtist.fulfilled, (state, action: PayloadAction<Artist>) => {
-        state.artists.push(action.payload);
-        state.isLoading = false;
-      })
-      .addCase(updateArtist.fulfilled, (state, action: PayloadAction<Artist>) => {
-        state.artists = state.artists.map(a => a.id === action.payload.id ? action.payload : a);
-        state.isLoading = false;
-      })
-      .addCase(deleteArtist.fulfilled, (state, action: PayloadAction<string>) => {
-        state.artists = state.artists.filter(a => a.id !== action.payload);
-        state.isLoading = false;
       });
-  }
+
+    // Fetch artist by ID
+    builder
+      .addCase(fetchArtistById.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchArtistById.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentArtist = action.payload;
+      })
+      .addCase(fetchArtistById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Create artist
+    builder
+      .addCase(createArtist.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createArtist.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.artists.unshift(action.payload);
+        state.pagination.total += 1;
+      })
+      .addCase(createArtist.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Update artist
+    builder
+      .addCase(updateArtist.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateArtist.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const index = state.artists.findIndex(artist => artist.id === action.payload.id);
+        if (index !== -1) {
+          state.artists[index] = action.payload;
+        }
+        if (state.currentArtist?.id === action.payload.id) {
+          state.currentArtist = action.payload;
+        }
+      })
+      .addCase(updateArtist.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Delete artist
+    builder
+      .addCase(deleteArtist.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteArtist.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.artists = state.artists.filter(artist => artist.id !== action.payload);
+        state.pagination.total -= 1;
+        if (state.currentArtist?.id === action.payload) {
+          state.currentArtist = null;
+        }
+      })
+      .addCase(deleteArtist.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
-export const { selectArtist, clearArtistsError } = artistsSlice.actions;
+export const {
+  setSearchQuery,
+  setFilters,
+  setPagination,
+  clearCurrentArtist,
+  clearError,
+  clearFilters,
+} = artistsSlice.actions;
+
 export default artistsSlice.reducer;

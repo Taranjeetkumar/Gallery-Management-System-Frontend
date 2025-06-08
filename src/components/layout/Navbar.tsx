@@ -11,6 +11,7 @@ import {
   Palette,
   Sparkles,
   User,
+  Users,
   X,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,6 +19,7 @@ import React, { useState, useEffect } from "react";
 
 const navigationItems = [
   { label: "Home", href: "/", icon: Sparkles },
+  { label: "Artists", href: "/artists", icon: Users },
   { label: "Gallery", href: "/gallery", icon: Camera },
   { label: "About", href: "/about", icon: User },
   { label: "Contact", href: "/contact", icon: ArrowRight },
@@ -88,6 +90,7 @@ export default function Navbar() {
             <motion.div
               className="flex items-center space-x-3 cursor-pointer"
               onClick={() => handleNavigation("/")}
+
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
@@ -136,6 +139,7 @@ export default function Navbar() {
                     key={item.label}
                     onClick={() => handleNavigation(item.href)}
                     className={`
+
                       relative flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300
                       ${
                         isActive
@@ -254,6 +258,7 @@ export default function Navbar() {
                   <motion.button
                     onClick={() => handleNavigation("/auth")}
                     className={`
+
                       px-5 py-2 border-2 border-white/30 rounded-xl font-medium transition-all duration-300
                       ${textColorClass} hover:bg-white/10 hover:scale-105 hover:border-white/50
                     `}
@@ -317,6 +322,7 @@ export default function Navbar() {
                       key={item.label}
                       onClick={() => handleNavigation(item.href)}
                       className={`
+
                         flex items-center space-x-3 w-full px-4 py-3 rounded-xl font-medium transition-all duration-300
                         ${
                           isActive

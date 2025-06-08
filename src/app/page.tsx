@@ -1,18 +1,9 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import {
-  ArrowRight,
-  ChevronDown,
-  CloudUpload,
-  Eye,
-  Palette,
-  Play,
-  Shield,
-  Sparkles,
-} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { ArrowRight, ChevronDown,CloudUpload,Eye,Palette,Play,Shield,Sparkles,Users,Calendar,TrendingUp} from "lucide-react";
 
 import Footer from "@/components/layout/Footer";
 // Import new components
@@ -33,6 +24,7 @@ export default function Home() {
   const heroY = useTransform(scrollY, [0, 800], [0, 200]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
+
   useEffect(() => {
     setAnimate(true);
   }, []);
@@ -52,32 +44,46 @@ export default function Home() {
 
   const features = [
     {
-      icon: <Palette className="w-8 h-8" />,
-      title: "Curate Collections",
+      icon: <Users className="w-8 h-8" />,
+      title: "Artist Management",
       description:
-        "Organize and showcase your artwork in beautiful, customizable galleries with professional presentation tools.",
+        "Manage artist profiles, track their artworks, and maintain comprehensive records of styles and specializations.",
       color: "from-purple-500 to-purple-600",
     },
     {
-      icon: <CloudUpload className="w-8 h-8" />,
-      title: "Easy Upload",
+      icon: <Palette className="w-8 h-8" />,
+      title: "Artwork Catalog",
       description:
-        "Upload high-resolution images with metadata, automatic optimization, and batch processing capabilities.",
+        "Organize and showcase artwork with detailed metadata, pricing, and high-resolution images with professional presentation.",
       color: "from-blue-500 to-blue-600",
     },
     {
-      icon: <Eye className="w-8 h-8" />,
-      title: "Share & Display",
+      icon: <CloudUpload className="w-8 h-8" />,
+      title: "Contact Management",
       description:
-        "Share your galleries with the world or keep them private for clients with advanced access controls.",
+        "Maintain relationships with customers, vendors, and art collectors with comprehensive contact management.",
       color: "from-green-500 to-green-600",
     },
     {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Secure & Professional",
+      icon: <Calendar className="w-8 h-8" />,
+      title: "Event Planning",
       description:
-        "Role-based access control ensures your artwork is protected with enterprise-grade security.",
+        "Plan and manage exhibitions, workshops, and gallery events with budget tracking and ROI analysis.",
+      color: "from-orange-500 to-orange-600",
+    },
+    {
+      icon: <Shield className="w-8 h-8" />,
+      title: "Staff Management",
+      description:
+        "Role-based access control and staff management with specialization tracking and performance metrics.",
       color: "from-red-500 to-red-600",
+    },
+    {
+      icon: <TrendingUp className="w-8 h-8" />,
+      title: "Financial Tracking",
+      description:
+        "Monitor costs, track sales, and analyze ROI for events and operations to ensure profitability.",
+      color: "from-indigo-500 to-indigo-600",
     },
   ];
 
@@ -163,7 +169,7 @@ export default function Home() {
             <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 mb-8">
               <Sparkles className="w-5 h-5 text-yellow-400" />
               <span className="text-white/90 font-medium">
-                New: AI-Powered Gallery Curation
+                Professional Gallery Management System
               </span>
               <Sparkles className="w-5 h-5 text-yellow-400" />
             </div>
@@ -176,7 +182,7 @@ export default function Home() {
             className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
           >
             <span className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
-              ArtCloud
+              GalleryPro
             </span>
           </motion.h1>
 
@@ -186,10 +192,10 @@ export default function Home() {
             transition={{ duration: 1, delay: 0.4 }}
             className="text-xl md:text-3xl lg:text-4xl text-white/90 mb-8 font-light leading-relaxed"
           >
-            Professional Gallery Management
+            Complete Gallery Management
             <br />
             <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-medium">
-              Reimagined for the Digital Age
+              For Professional Art Galleries
             </span>
           </motion.h2>
 
@@ -199,9 +205,8 @@ export default function Home() {
             transition={{ duration: 1, delay: 0.6 }}
             className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed"
           >
-            Showcase your artwork with stunning galleries, manage collections
-            effortlessly, and connect with a global community of artists and
-            collectors.
+            Manage artists, artworks, contacts, staff, and events with comprehensive
+            tools designed for professional art galleries and dealers.
           </motion.p>
 
           <motion.div
@@ -275,15 +280,15 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Why Choose ArtCloud?
+              Complete Gallery Management
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Powerful tools designed specifically for artists, galleries, and
-              collectors to showcase and manage artwork professionally.
+              Everything you need to manage a professional art gallery, from artist
+              relationships to event planning and financial tracking.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -361,8 +366,8 @@ export default function Home() {
             Ready to Showcase Your Art?
           </h2>
           <p className="text-xl text-white/90 mb-10 leading-relaxed">
-            Join thousands of artists and galleries already using ArtCloud to
-            elevate their digital presence.
+           Join galleries and art dealers worldwide who trust GalleryPro to
+            manage their operations efficiently and profitably.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
