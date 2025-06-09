@@ -209,13 +209,14 @@ const gallerySlice = createSlice({
       })
       .addCase(fetchGalleries.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.galleries = action.payload.galleries;
-        state.pagination = {
-          page: action.payload.page,
-          limit: action.payload.limit,
-          total: action.payload.total,
-          totalPages: action.payload.totalPages,
-        };
+        console.log("actikbhbghdf ::  ", action.payload)
+        state.galleries = action.payload.data;
+        // state.pagination = {
+        //   page: action.payload.page,
+        //   limit: action.payload.limit,
+        //   total: action.payload.total,
+        //   totalPages: action.payload.totalPages,
+        // };
       })
       .addCase(fetchGalleries.rejected, (state, action) => {
         state.isLoading = false;

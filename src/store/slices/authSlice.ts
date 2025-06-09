@@ -22,7 +22,7 @@ interface AuthSliceState extends AuthState {
 
 const initialState: AuthSliceState = {
   user: null,
-  role: null,
+  role:null,
   token: null,
   isAuthenticated: false,
   isLoading: false,
@@ -63,7 +63,7 @@ export const signupUser = createAsyncThunk(
         secure: true,
         sameSite: "strict",
       });
-      return response?.data;
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Signup failed");
     }
@@ -174,7 +174,7 @@ const authSlice = createSlice({
           state.isLoading = false;
           console.log("fsfdhh ; ", action.payload);
           state.user = action.payload.user;
-          // state.role = action.payload.user.roles;
+          state.role = action.payload.roles[0];
           state.token = action.payload.token;
           state.isAuthenticated = true;
           state.loginError = null;
@@ -242,6 +242,7 @@ const authSlice = createSlice({
         (state, action: PayloadAction<User>) => {
           state.isLoading = false;
           state.user = action.payload;
+          state.role = action.payload.roles[0];
           state.isAuthenticated = true;
           state.error = null;
         }
@@ -264,6 +265,10 @@ const authSlice = createSlice({
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = { ...state.user, ...action.payload } as User;
+
+        // console.log("gfsdghf  :  ",action.payload);
+
+        // state.role = action.payload.roles[0];
         state.error = null;
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
@@ -277,6 +282,7 @@ const authSlice = createSlice({
         refreshToken.fulfilled,
         (state, action: PayloadAction<AuthResponse>) => {
           state.user = action.payload.user;
+          state.role = action.payload.roles[0];
           state.token = action.payload.token;
           state.isAuthenticated = true;
           state.error = null;

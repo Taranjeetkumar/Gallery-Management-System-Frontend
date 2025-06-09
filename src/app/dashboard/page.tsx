@@ -48,7 +48,7 @@ import {
 } from "@mui/material";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 interface StatCardProps {
   title: string;
@@ -152,12 +152,11 @@ const RecentItem: React.FC<RecentItemProps> = ({
 );
 
 export default function DashboardPage() {
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, role } = useAppSelector((state) => state.auth);
   const { galleries, isLoading, error } = useAppSelector(
     (state) => state.gallery
   );
-    const router = useRouter();
-  const [role, setRole] = useState("");
+  const router = useRouter();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { artworks } = useAppSelector((state) => state.artworks);
   const dispatch = useAppDispatch();
@@ -169,16 +168,16 @@ export default function DashboardPage() {
     isPublic: true,
   });
 
+  console.log("rolevvV:V::Vvdvv ", role);
+
   useEffect(() => {
     if (user) {
-
-      console.log("jgfyjgyjuf",user);
+      console.log("jgfyjgyjuf", user);
 
       let role = user.roles[0];
-      setRole(role);
-      console.log("gfgyugyufgyufg ", role, "fghdyt " , UserRole.ARTIST);
+      console.log("gfgyugyufgyufg ", role, "fghdyt ", UserRole.ARTIST);
       // only fetch galleries for non-artist roles
-      if (role != UserRole.ARTIST) {
+      if (role != 'ROLE_ARTIST') {
         dispatch(fetchGalleries());
       }
     }
@@ -242,24 +241,25 @@ export default function DashboardPage() {
         return [
           {
             title: "My Galleries",
-            value: userGalleries?.length ||0,
+            value: userGalleries?.length || 0,
             icon: <PhotoLibrary />,
             color: "#1976d2",
             change: "+2",
           },
           {
             title: "My Artworks",
-            value: userArtworks?.length ||0,
+            value: userArtworks?.length || 0,
             icon: <Image />,
             color: "#2e7d32",
             change: "+18",
           },
           {
             title: "Total Views",
-            value: userArtworks?.reduce(
-              (sum, a) => sum + (a.artworkCount || 0),
-              0
-            ) ||0,
+            value:
+              userArtworks?.reduce(
+                (sum, a) => sum + (a.artworkCount || 0),
+                0
+              ) || 0,
             icon: <People />,
             color: "#ed6c02",
             change: "+3",
@@ -289,15 +289,16 @@ export default function DashboardPage() {
           },
           {
             title: "For Sale",
-            value: userArtworks?.filter((a:any) => a.isForSale).length,
+            value: userArtworks?.filter((a: any) => a.isForSale).length,
             icon: <Visibility />,
             color: "#ed6c02",
             change: "+45",
           },
           {
             title: "Total Revenue",
-            value: `${userArtworks?.filter((a:any) => a.price)
-              .reduce((sum:any, a:any) => sum + (a.price || 0), 0)}`,
+            value: `${userArtworks
+              ?.filter((a: any) => a.price)
+              .reduce((sum: any, a: any) => sum + (a.price || 0), 0)}`,
             icon: <TrendingUp />,
             color: "#9c27b0",
             change: "+12",
@@ -313,22 +314,24 @@ export default function DashboardPage() {
           },
           {
             title: "Available Artworks",
-            value: artworks?.filter((a:any) => a.isForSale).length,
+            value: artworks?.filter((a: any) => a.isForSale).length,
             icon: <Image />,
             color: "#2e7d32",
           },
           {
             title: "Artists",
-            value: new Set(artworks?.map((a:any) => a.artistId)).size,
+            value: new Set(artworks?.map((a: any) => a.artistId)).size,
             icon: <People />,
             color: "#ed6c02",
           },
           {
             title: "Avg Price",
             value: `${Math.round(
-              artworks?.filter((a:any) => a.price)
+              artworks
+                ?.filter((a: any) => a.price)
                 .reduce(
-                  (sum:any, a:any, _:any, arr:any) => sum + (a.price || 0) / arr.length,
+                  (sum: any, a: any, _: any, arr: any) =>
+                    sum + (a.price || 0) / arr.length,
                   0
                 )
             )}`,
@@ -360,17 +363,18 @@ export default function DashboardPage() {
           {
             label: "Create Gallery",
             icon: <Add />,
-            action: () => setCreateDialogOpen(true),
+            action: () => router.push("/galleries"),
           },
           {
             label: "Browse Galleries",
             icon: <PhotoLibrary />,
-            action: () => window.open("/galleries", "_blank"),
+            action: () => router.push("/galleries"),
           },
           {
-            label: "Upload Artwork",
+            label: "Create Artwork",
             icon: <Add />,
-            action: () => window.open("/artworks/upload", "_blank"),
+
+            action: () => router.push("/account/artworks/new"),
           },
         ];
       case UserRole.ARTIST:
@@ -505,7 +509,7 @@ export default function DashboardPage() {
                     ) : (
                       <Box>
                         {galleries
-                          .filter((g) =>
+                          ?.filter((g) =>
                             user?.role === UserRole.ADMIN
                               ? true
                               : g.ownerId === user?.id
@@ -536,7 +540,7 @@ export default function DashboardPage() {
                               }
                             />
                           ))}
-                        {galleries.filter((g) =>
+                        {galleries?.filter((g) =>
                           user?.role === UserRole.ADMIN
                             ? true
                             : g.ownerId === user?.id
@@ -629,7 +633,7 @@ export default function DashboardPage() {
                       ) : (
                         <Grid container spacing={2}>
                           {galleries
-                            .filter((g) =>
+                            ?.filter((g) =>
                               user?.role === UserRole.ADMIN
                                 ? true
                                 : g.ownerId === user?.id
@@ -713,12 +717,19 @@ export default function DashboardPage() {
               </Grid>
             )}
 
-{/* My Artworks card for artists */}
+            {/* My Artworks card for artists */}
             {role == UserRole.ARTIST && (
               <Grid item xs={12} sm={6} md={3}>
-                <Card onClick={() => router.push('/account/artworks/list')} sx={{ cursor: 'pointer', height: '100%' }}>
+                <Card
+                  onClick={() => router.push("/account/artworks/list")}
+                  sx={{ cursor: "pointer", height: "100%" }}
+                >
                   <CardContent>
-                    <Box display="flex" flexDirection="column" alignItems="center">
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                    >
                       <PhotoLibrary fontSize="large" color="primary" />
                       <Typography variant="h6" mt={1}>
                         My Artworks
@@ -728,8 +739,6 @@ export default function DashboardPage() {
                 </Card>
               </Grid>
             )}
-
-
           </>
         ) : null}
       </DashboardLayout>
