@@ -35,7 +35,9 @@ export default function Navbar() {
     (state) => state.auth,
   );
 
-  const [role, setRole] = useState(user.roles[0]) 
+  console.log("hjfggyufgu ", user);
+
+  // const [role, setRole] = useState(user.roles[0]) 
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -48,7 +50,7 @@ export default function Navbar() {
     const items = [...navigationItems];
 
     // Add Gallery link for non-artists, My Artworks for artists
-    if (isAuthenticated && role === UserRole.ARTIST) {
+    if (isAuthenticated && user.roles.length>0 && user.roles[0] === UserRole.ARTIST) {
       items.splice(2, 0, { label: "My Artworks", href: "/account/artworks/list", icon: Camera });
     } else {
       items.splice(2, 0, { label: "Gallery", href: "/gallery", icon: Camera });
@@ -212,7 +214,7 @@ export default function Navbar() {
                           {user?.fullname || "User"}
                         </p>
                         <p className={`text-xs opacity-60 ${textColorClass}`}>
-                          {user?.role?.replace("_", " ").toLowerCase()}
+                          {user.roles.length>0 && user.roles[0]?.replace("_", " ").toLowerCase()}
                         </p>
                       </div>
                     </div>
