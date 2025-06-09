@@ -18,21 +18,9 @@ class ArtworkService {
   }
 
   async createArtwork(
-    data: ArtworkFormData & { imageFile: File }
+    data: ArtworkFormData 
   ): Promise<Artwork> {
-    const formData = new FormData();
-    formData.append("imageFile", data.imageFile);
-
-    // Add other fields
-    Object.keys(data).forEach((key) => {
-      if (key !== "imageFile") {
-        formData.append(key, (data as any)[key]);
-      }
-    });
-
-    const response = await apiService.post("/artworks", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await apiService.post("/artworks", data);
     return response?.data;
   }
 

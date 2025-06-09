@@ -22,7 +22,7 @@ interface AuthSliceState extends AuthState {
 
 const initialState: AuthSliceState = {
   user: null,
-  role:null,
+  role: null,
   token: null,
   isAuthenticated: false,
   isLoading: false,
@@ -36,27 +36,27 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const response:any = await authService.login(credentials);
+      const response: any = await authService.login(credentials);
 
-      console.log('hfdgv ;;  ',response);
+      console.log("hfdgv ;;  ", response);
       // Set token in cookies
-      Cookies.set("authToken", response?.data.token, {
+      Cookies.set("authToken", response?.token, {
         expires: 7,
         secure: true,
         sameSite: "strict",
       });
-      return response?.data;
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
-  },
+  }
 );
 
 export const signupUser = createAsyncThunk(
   "auth/signup",
   async (signupData: SignupData, { rejectWithValue }) => {
     try {
-      const response:any = await authService.signup(signupData);
+      const response: any = await authService.signup(signupData);
       // Set token in cookies
       Cookies.set("authToken", response.token, {
         expires: 7,
@@ -67,7 +67,7 @@ export const signupUser = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Signup failed");
     }
-  },
+  }
 );
 
 export const logoutUser = createAsyncThunk(
@@ -81,28 +81,28 @@ export const logoutUser = createAsyncThunk(
       Cookies.remove("authToken");
       return rejectWithValue(error.response?.data?.message || "Logout failed");
     }
-  },
+  }
 );
 
 export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      const user = await authService.getCurrentUser();
+      const user = await profileService.getCurrentUserProfile();
       return user;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to get user",
+        error.response?.data?.message || "Failed to get user"
       );
     }
-  },
+  }
 );
 
 export const refreshToken = createAsyncThunk(
   "auth/refreshToken",
   async (_, { rejectWithValue }) => {
     try {
-      const response:any = await authService.refreshToken();
+      const response: any = await authService.refreshToken();
       Cookies.set("authToken", response.token, {
         expires: 7,
         secure: true,
@@ -111,16 +111,16 @@ export const refreshToken = createAsyncThunk(
       return response?.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Token refresh failed",
+        error.response?.data?.message || "Token refresh failed"
       );
     }
-  },
+  }
 );
 
 // Async thunk for updating the user profile
 export const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
-  async (profileData: Partial<User>, { rejectWithValue }) => {
+  async (profileData: any, { rejectWithValue }) => {
     try {
       // TODO: INTEGRATE API HERE for updating profile data
       const response: any = await profileService.updateProfile(profileData);
@@ -172,7 +172,7 @@ const authSlice = createSlice({
         loginUser.fulfilled,
         (state, action: PayloadAction<AuthResponse>) => {
           state.isLoading = false;
-          console.log('fsfdhh ; ',action.payload);
+          console.log("fsfdhh ; ", action.payload);
           state.user = action.payload.user;
           // state.role = action.payload.user.roles;
           state.token = action.payload.token;
@@ -180,7 +180,7 @@ const authSlice = createSlice({
           state.loginError = null;
           state.signupError = null;
           state.error = null;
-        },
+        }
       )
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -204,7 +204,7 @@ const authSlice = createSlice({
           state.loginError = null;
           state.signupError = null;
           state.error = null;
-        },
+        }
       )
       .addCase(signupUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -244,7 +244,7 @@ const authSlice = createSlice({
           state.user = action.payload;
           state.isAuthenticated = true;
           state.error = null;
-        },
+        }
       )
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -256,20 +256,20 @@ const authSlice = createSlice({
         Cookies.remove("authToken");
       });
 
-      builder
-       .addCase(updateUserProfile.pending, (state) => {
-              state.isLoading = true;
-              state.error = null;
-            })
-            .addCase(updateUserProfile.fulfilled, (state, action) => {
-              state.isLoading = false;
-              state.user = { ...state.user, ...action.payload } as User;
-              state.error = null;
-            })
-            .addCase(updateUserProfile.rejected, (state, action) => {
-              state.isLoading = false;
-              state.error = (action.payload as string) || "Could not update profile";
-            });
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = { ...state.user, ...action.payload } as User;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action.payload as string) || "Could not update profile";
+      });
 
     // Refresh token
     builder
@@ -280,7 +280,7 @@ const authSlice = createSlice({
           state.token = action.payload.token;
           state.isAuthenticated = true;
           state.error = null;
-        },
+        }
       )
       .addCase(refreshToken.rejected, (state) => {
         // Clear auth on failed token refresh

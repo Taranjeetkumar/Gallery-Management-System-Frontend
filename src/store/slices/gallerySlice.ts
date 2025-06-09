@@ -103,6 +103,7 @@ export const fetchGalleries = createAsyncThunk(
     page?: number;
     limit?: number;
     search?: string;
+    artistId?: string;
     filters?: Partial<GalleryState["filters"]>;
     sortBy?: string;
     sortOrder?: string;

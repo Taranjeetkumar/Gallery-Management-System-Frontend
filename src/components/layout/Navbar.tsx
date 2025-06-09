@@ -16,11 +16,13 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
+import { type UserRole, roleLabels } from "@/types/user";
 
 const navigationItems = [
   { label: "Home", href: "/", icon: Sparkles },
   { label: "Artists", href: "/artists", icon: Users },
-  { label: "Gallery", href: "/gallery", icon: Camera },
+  // Gallery nav hidden for artists; replaced below
+  // { label: "Gallery", href: "/gallery", icon: Camera },
   { label: "About", href: "/about", icon: User },
   { label: "Contact", href: "/contact", icon: ArrowRight },
 ];
@@ -33,11 +35,27 @@ export default function Navbar() {
     (state) => state.auth,
   );
 
+  const [role, setRole] = useState(user.roles[0]) 
+
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const { scrollY } = useScroll();
+
+  // Dynamic navigation items based on user role
+  const getNavigationItems = () => {
+    const items = [...navigationItems];
+
+    // Add Gallery link for non-artists, My Artworks for artists
+    if (isAuthenticated && role === UserRole.ARTIST) {
+      items.splice(2, 0, { label: "My Artworks", href: "/account/artworks/list", icon: Camera });
+    } else {
+      items.splice(2, 0, { label: "Gallery", href: "/gallery", icon: Camera });
+    }
+
+    return items;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,7 +149,7 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {navigationItems.map((item, index) => {
+              {getNavigationItems().map((item, index) => {
                 const IconComponent = item.icon;
                 const isActive = pathname === item.href;
                 return (
@@ -314,7 +332,7 @@ export default function Navbar() {
               transition={{ duration: 0.3 }}
             >
               <div className="px-4 py-6 space-y-3">
-                {navigationItems.map((item, index) => {
+                {getNavigationItems().map((item, index) => {
                   const IconComponent = item.icon;
                   const isActive = pathname === item.href;
                   return (

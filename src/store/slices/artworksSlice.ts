@@ -34,13 +34,15 @@ export interface Artwork {
 export interface ArtworkFormData {
   title: string;
   description?: string;
-  artistId: number;
   galleryId: number;
+  imageUrl: string;
+  thumbnailUrl?: string;
   medium?: string;
   dimensions?: string;
   yearCreated?: number;
   price?: number;
   isForSale: boolean;
+  status?: string;
   isFeatured?: boolean;
 }
 
@@ -111,6 +113,7 @@ export const fetchArtworks = createAsyncThunk(
     page?: number;
     limit?: number;
     search?: string;
+    artistId?:string;
     filters?: Partial<ArtworksState["filters"]>;
     sortBy?: string;
     sortOrder?: string;
@@ -147,7 +150,7 @@ export const fetchFeaturedArtworks = createAsyncThunk(
 
 export const createArtwork = createAsyncThunk(
   "artworks/createArtwork",
-  async (artworkData: ArtworkFormData & { imageFile: File }, { rejectWithValue }) => {
+  async (artworkData: ArtworkFormData , { rejectWithValue }) => {
     try {
       return await artworkService.createArtwork(artworkData);
     } catch (error: any) {
@@ -230,7 +233,9 @@ const artworksSlice = createSlice({
       })
       .addCase(fetchArtworks.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.artworks = action.payload.artworks;
+        console.log("gsfjhdgjh ::  ", action.payload);
+
+        state.artworks = action.payload;
         state.pagination = {
           page: action.payload.page,
           limit: action.payload.limit,

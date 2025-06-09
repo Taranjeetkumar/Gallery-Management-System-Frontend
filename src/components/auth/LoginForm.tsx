@@ -56,6 +56,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
 
     try {
       const result = await dispatch(loginUser(data));
+
+      console.log("fbhb : : ",result);
+      
       if (loginUser.fulfilled.match(result)) {
         router.push("/dashboard");
       }
