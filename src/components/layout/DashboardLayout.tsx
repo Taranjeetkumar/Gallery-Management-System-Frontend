@@ -41,7 +41,7 @@ import {
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-
+import RoleBasedNav from "./RoleBasedNav";
 const drawerWidth = 280;
 
 interface DashboardLayoutProps {
@@ -54,24 +54,6 @@ interface NavigationItem {
   path: string;
   roles?: UserRole[];
 }
-
-const navigationItems: NavigationItem[] = [
-  { label: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-  { label: "Artists", icon: <People />, path: "/artists" },
-  { label: "Artworks", icon: <Image />, path: "/artworks" },
-  { label: "Galleries", icon: <PhotoLibrary />, path: "/galleries" },
-  { label: "Contacts", icon: <ContactMail />, path: "/contacts" },
-  { label: "Staff", icon: <Group />, path: "/staff" },
-  { label: "Events", icon: <Event />, path: "/events" },
-  { label: "Reports", icon: <Assessment />, path: "/reports" },
-  {
-    label: "Users",
-    icon: <People />,
-    path: "/users",
-    roles: [UserRole.ADMIN],
-  },
-  { label: "Settings", icon: <Settings />, path: "/settings" },
-];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
@@ -141,11 +123,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }}
       >
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          ArtCloud
+          Gallery pro
         </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+        {/* <Typography variant="body2" sx={{ opacity: 0.9 }}>
           Gallery Management
-        </Typography>
+        </Typography> */}
       </Box>
 
       <Box sx={{ p: 2 }}>
@@ -168,17 +150,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 bgcolor: "primary.main",
               }}
             >
-              {user?.firstName?.charAt(0)}
-              {user?.lastName?.charAt(0)}
+             {user?.fullname
+                  ?.trim()
+                  .split(" ")
+                  .map((word:any) => word[0])
+                  .join("")}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="subtitle2" noWrap>
-                {user.firstName} {user.lastName}
+                {user?.fullname}
               </Typography>
+            
               <Chip
-                label={user?.role?.replace("_", " ").toLowerCase()}
+                label={role?.replace("_", " ").toLowerCase()}
                 size="small"
-                color={getRoleColor(user.role) as any}
+                color={getRoleColor(role) as any}
                 sx={{ mt: 0.5 }}
               />
             </Box>
@@ -188,7 +174,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       <Divider />
 
-      <List sx={{ px: 1 }}>
+      <RoleBasedNav userRole={role} />
+
+      {/* <List sx={{ px: 1 }}>
         {navigationItems.map((item) => {
           // Check if user has required role for this item
           if (item.roles && user && !item.roles.includes(user.role)) {
@@ -214,10 +202,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </ListItem>
           );
         })}
-      </List>
+      </List> */}
     </Box>
   );
 
+  console.log("dvsv : : ", user);
   return (
     <Box sx={{ display: "flex" }}>
       <AppBar

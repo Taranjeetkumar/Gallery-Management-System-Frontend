@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { createGallery, fetchGalleries } from "@/store/slices/gallerySlice";
 import { fetchArtworks } from "@/store/slices/artworksSlice";
-import { UserRole, roleLabels } from "@/types/user";
+import { UserRole } from "@/types/auth";
 import type { Artwork, CreateGalleryData, Gallery } from "@/types/gallery";
 import {
   Add,
@@ -177,7 +177,7 @@ export default function DashboardPage() {
       let role = user.roles[0];
       console.log("gfgyugyufgyufg ", role, "fghdyt ", UserRole.ARTIST);
       // only fetch galleries for non-artist roles
-      if (role != 'ROLE_ARTIST') {
+      if (role != "ROLE_ARTIST") {
         dispatch(fetchGalleries());
       }
     }
@@ -204,8 +204,9 @@ export default function DashboardPage() {
     const userGalleries = galleries?.filter((g) => g.ownerId === user?.id);
     const userArtworks = artworks?.filter((a) => a.artistId === user?.id);
     const publicGalleries = galleries?.filter((g) => g.isPublic);
+    const artistGalleries = galleries?.filter((g) => g?.artistId === user?.id);
 
-    switch (user?.role) {
+    switch (role) {
       case UserRole.ADMIN:
         return [
           {
@@ -264,13 +265,13 @@ export default function DashboardPage() {
             color: "#ed6c02",
             change: "+3",
           },
-          {
-            title: "Public Galleries",
-            value: userGalleries?.filter((g) => g.isPublic).length,
-            icon: <TrendingUp />,
-            color: "#9c27b0",
-            change: "+15%",
-          },
+          // {
+          //   title: "Public Galleries",
+          //   value: userGalleries?.filter((g) => g.isPublic).length,
+          //   icon: <TrendingUp />,
+          //   color: "#9c27b0",
+          //   change: "+15%",
+          // },
         ];
       case UserRole.ARTIST:
         return [
@@ -283,7 +284,7 @@ export default function DashboardPage() {
           },
           {
             title: "In Galleries",
-            value: userGalleries?.length,
+            value: artistGalleries?.length,
             icon: <PhotoLibrary />,
             color: "#2e7d32",
           },
@@ -295,10 +296,19 @@ export default function DashboardPage() {
             change: "+45",
           },
           {
+            title: "For Featured",
+            value: userArtworks?.filter((a: any) => a.isFeatured).length,
+            icon: <Visibility />,
+            color: "#ed6c02",
+            change: "+45",
+          },
+          {
             title: "Total Revenue",
             value: `${userArtworks
               ?.filter((a: any) => a.price)
-              .reduce((sum: any, a: any) => sum + (a.price || 0), 0)}`,
+              .reduce((sum: number, a: any) => {
+                return a?.status === "SOLD" ? sum + (a.price || 0) : sum;
+              }, 0)}`,
             icon: <TrendingUp />,
             color: "#9c27b0",
             change: "+12",
@@ -343,7 +353,7 @@ export default function DashboardPage() {
   };
 
   const getQuickActions = () => {
-    switch (user?.role) {
+    switch (role) {
       case UserRole.ADMIN:
         return [
           {
@@ -380,19 +390,14 @@ export default function DashboardPage() {
       case UserRole.ARTIST:
         return [
           {
-            label: "Upload Artwork",
+            label: "Create Artwork",
             icon: <Add />,
-            action: () => window.open("/artworks/upload", "_blank"),
+            action: () =>  router.push('/account/artworks/new'),
           },
           {
-            label: "Create Gallery",
-            icon: <Add />,
-            action: () => setCreateDialogOpen(true),
-          },
-          {
-            label: "Browse Galleries",
+            label: "My Artwork",
             icon: <PhotoLibrary />,
-            action: () => window.open("/galleries", "_blank"),
+            action: () => router.push("/artworks"),
           },
         ];
       default:
@@ -477,6 +482,8 @@ export default function DashboardPage() {
               </Grid>
 
               {/* Recent Galleries */}
+
+              {role !== UserRole.ARTIST && (
               <Grid item xs={12} md={8}>
                 <Card>
                   <CardContent>
@@ -565,6 +572,8 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
+              )}
+            
             </Grid>
 
             {/* Gallery Grid Section */}
@@ -717,28 +726,6 @@ export default function DashboardPage() {
               </Grid>
             )}
 
-            {/* My Artworks card for artists */}
-            {role == UserRole.ARTIST && (
-              <Grid item xs={12} sm={6} md={3}>
-                <Card
-                  onClick={() => router.push("/account/artworks/list")}
-                  sx={{ cursor: "pointer", height: "100%" }}
-                >
-                  <CardContent>
-                    <Box
-                      display="flex"
-                      flexDirection="column"
-                      alignItems="center"
-                    >
-                      <PhotoLibrary fontSize="large" color="primary" />
-                      <Typography variant="h6" mt={1}>
-                        My Artworks
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
           </>
         ) : null}
       </DashboardLayout>

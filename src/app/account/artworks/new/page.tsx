@@ -1,51 +1,67 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { ProtectedRoute } from '@/components/common/ProtectedRoute';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { createArtwork } from '@/store/slices/artworksSlice';
-import { fetchGalleries } from '@/store/slices/gallerySlice';
-import { uploadFile } from '@/store/slices/uploadSlice';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { createArtwork } from "@/store/slices/artworksSlice";
+import { fetchGalleries } from "@/store/slices/gallerySlice";
+import { uploadFile } from "@/store/slices/uploadSlice";
+import { useRouter } from "next/navigation";
 import {
-  Box, Button, CircularProgress, Grid, TextField, Checkbox,
-  FormControlLabel, Alert, Typography, MenuItem, Select,
-  FormControl, InputLabel, Card, CardContent
-} from '@mui/material';
-import { CloudUpload } from '@mui/icons-material';
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Alert,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Card,
+  CardContent,
+  Container,
+  Divider,
+} from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
+import { UserRole } from "@/types/auth";
 
 export default function NewArtworkPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user } = useAppSelector(state => state.auth);
-  const { isLoading, error } = useAppSelector(state => state.artworks);
-  const { galleries } = useAppSelector(state => state.gallery);
+  const { user, role } = useAppSelector((state) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.artworks);
+  const { galleries } = useAppSelector((state) => state.gallery);
 
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    galleryId: '',
-    medium: '',
-    dimensions: '',
-    yearCreated: '',
-    price: '',
+    title: "",
+    description: "",
+    galleryId: "",
+    medium: "",
+    dimensions: "",
+    yearCreated: "",
+    price: "",
     isForSale: false,
     isFeatured: false,
-    status: 'ACTIVE'
+    status: "ACTIVE",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    // Fetch available galleries for selection
-    dispatch(fetchGalleries({ artistId: parseInt(user.id)  }));
-  }, [dispatch]);
+    if (user?.id) {
+      dispatch(fetchGalleries({ artistId: parseInt(user.id) }));
+    }
+  }, [dispatch, user?.id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -58,19 +74,16 @@ export default function NewArtworkPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) {
-      alert('User not authenticated');
+      alert("User not authenticated");
       return;
     }
-
     if (!imageFile) {
-      alert('Please select an image file');
+      alert("Please select an image file");
       return;
     }
 
     try {
       setUploading(true);
-
-      // Upload image first
       const uploadResult: any = await dispatch(uploadFile({ file: imageFile }));
 
       if (uploadResult.payload?.data?.fileUrl) {
@@ -80,21 +93,18 @@ export default function NewArtworkPage() {
           yearCreated: form.yearCreated ? Number(form.yearCreated) : undefined,
           price: form.price ? Number(form.price) : undefined,
           imageUrl: uploadResult.payload.data.fileUrl,
-          thumbnailUrl: uploadResult.payload.data.fileUrl // Use same for now
+          thumbnailUrl: uploadResult.payload.data.fileUrl,
         };
 
-        const result = await dispatch(createArtwork({
-            ...artworkData,
-        }));
-
-        if (result.type.endsWith('/fulfilled')) {
-          router.push('/account/artworks/list');
+        const result = await dispatch(createArtwork(artworkData));
+        if (result.type.endsWith("/fulfilled")) {
+          router.push("/account/artworks/list");
         }
       } else {
-        alert('Failed to upload image');
+        alert("Failed to upload image");
       }
-    } catch (error) {
-      console.error('Error creating artwork:', error);
+    } catch (err) {
+      console.error("Error creating artwork:", err);
     } finally {
       setUploading(false);
     }
@@ -104,29 +114,59 @@ export default function NewArtworkPage() {
 
   return (
     <ProtectedRoute>
-      <Box p={3}>
-        <Typography variant="h4" fontWeight="bold" mb={3}>Create New Artwork</Typography>
+      <Container maxWidth="md">
+        <Typography variant="h4" mt={4} mb={2} align="center">
+          Create New Artwork
+        </Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-        <Card>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                {/* Title */}
-                <Grid item xs={12}>
+        <form onSubmit={handleSubmit}>
+          {/* Artwork Details */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Artwork Details
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Artwork Title"
+                    label="Title"
                     name="title"
                     value={form.title}
                     onChange={handleChange}
                     required
                   />
                 </Grid>
-
-                {/* Description */}
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      name="status"
+                      value={form.status}
+                      label="Status"
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          status: e.target.value,
+                        }))
+                      }
+                    >
+                      <MenuItem value="ACTIVE">Active</MenuItem>
+                      <MenuItem value="INACTIVE">Inactive</MenuItem>
+                      <MenuItem value="SOLD">Sold</MenuItem>
+                      <MenuItem value="RESERVED">Reserved</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Description"
@@ -134,57 +174,71 @@ export default function NewArtworkPage() {
                     value={form.description}
                     onChange={handleChange}
                     multiline
-                    rows={4}
+                    // rows={2}
                   />
                 </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
 
-                {/* Gallery Selection */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth >
-                    <InputLabel>Gallery</InputLabel>
-                    <Select
-                      name="galleryId"
-                      value={form.galleryId}
-                      onChange={(e) => setForm(prev => ({ ...prev, galleryId: e.target.value as string }))}
-                    >
-                      {galleries?.map((gallery: any) => (
-                        <MenuItem key={gallery.id} value={gallery.id}>
-                          {gallery.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+          {/* Gallery & Specs */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Gallery & Specifications
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
 
-                {/* Medium */}
-                <Grid item xs={12} md={6}>
+              <Grid container spacing={2}>
+                {role !== UserRole.ARTIST && (
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Gallery</InputLabel>
+                      <Select
+                        name="galleryId"
+                        value={form.galleryId}
+                        label="Gallery"
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            galleryId: e.target.value as string,
+                          }))
+                        }
+                      >
+                        {galleries.map((g: any) => (
+                          <MenuItem key={g.id} value={g.id}>
+                            {g.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                )}
+
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Medium"
                     name="medium"
                     value={form.medium}
                     onChange={handleChange}
-                    placeholder="e.g., Oil on canvas, Digital art, Sculpture"
+                    placeholder="Oil on canvas, Digital, etc."
                   />
                 </Grid>
-
-                {/* Dimensions */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Dimensions"
                     name="dimensions"
                     value={form.dimensions}
                     onChange={handleChange}
-                    placeholder="e.g., 24x36 inches, 60x90 cm"
+                    placeholder="e.g., 24x36 inches"
                   />
                 </Grid>
-
-                {/* Year Created */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={6} sm={3}>
                   <TextField
                     fullWidth
-                    label="Year Created"
+                    label="Year"
                     name="yearCreated"
                     type="number"
                     value={form.yearCreated}
@@ -192,9 +246,7 @@ export default function NewArtworkPage() {
                     inputProps={{ min: 1800, max: new Date().getFullYear() }}
                   />
                 </Grid>
-
-                {/* Price */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={6} sm={3}>
                   <TextField
                     fullWidth
                     label="Price (USD)"
@@ -205,53 +257,42 @@ export default function NewArtworkPage() {
                     inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
 
-                {/* Status */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      name="status"
-                      value={form.status}
-                      onChange={(e) => setForm(prev => ({ ...prev, status: e.target.value as string }))}
-                    >
-                      <MenuItem value="ACTIVE">Active</MenuItem>
-                      <MenuItem value="INACTIVE">Inactive</MenuItem>
-                      <MenuItem value="SOLD">Sold</MenuItem>
-                      <MenuItem value="RESERVED">Reserved</MenuItem>
-                    </Select>
-                  </FormControl>
+          {/* Image & Options */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Image & Options
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<CloudUpload />}
+                  >
+                    Upload Image
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      required
+                    />
+                  </Button>
+                  {imageFile && (
+                    <Typography variant="body2" color="text.secondary">
+                      {imageFile.name}
+                    </Typography>
+                  )}
                 </Grid>
 
-                {/* Image Upload */}
-                <Grid item xs={12}>
-                  <Box>
-                    <Typography variant="h6" gutterBottom>Artwork Image</Typography>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<CloudUpload />}
-                      sx={{ mb: 1 }}
-                    >
-                      Choose Image File
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        required
-                      />
-                    </Button>
-                    {imageFile && (
-                      <Typography variant="body2" color="text.secondary">
-                        Selected: {imageFile.name}
-                      </Typography>
-                    )}
-                  </Box>
-                </Grid>
-
-                {/* Checkboxes */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={3}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -260,11 +301,10 @@ export default function NewArtworkPage() {
                         onChange={handleChange}
                       />
                     }
-                    label="Available for Sale"
+                    label="For Sale"
                   />
                 </Grid>
-
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={3}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -273,35 +313,47 @@ export default function NewArtworkPage() {
                         onChange={handleChange}
                       />
                     }
-                    label="Featured Artwork"
+                    label="Featured"
                   />
                 </Grid>
-
-                {/* Submit Buttons */}
-                <Grid item xs={12}>
-                  <Box display="flex" gap={2} justifyContent="flex-end">
-                    <Button
-                      variant="outlined"
-                      onClick={() => router.push('/account/artworks/list')}
-                      disabled={isSubmitting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={isSubmitting}
-                      startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-                    >
-                      {isSubmitting ? 'Creating...' : 'Create Artwork'}
-                    </Button>
-                  </Box>
-                </Grid>
               </Grid>
-            </form>
-          </CardContent>
-        </Card>
-      </Box>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              position: "sticky",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              bgcolor: "background.paper",
+              py: 2,
+              borderTop: 1,
+              borderColor: "divider",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => router.push("/account/artworks/list")}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isSubmitting}
+              startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
+            >
+              {isSubmitting ? "Creating..." : "Create Artwork"}
+            </Button>
+          </Box>
+        </form>
+      </Container>
     </ProtectedRoute>
   );
 }

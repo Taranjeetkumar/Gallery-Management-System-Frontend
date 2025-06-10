@@ -24,19 +24,17 @@ export interface Artist {
 }
 
 export interface ArtistFormData {
-  name: string;
+  fullname: string;
   email: string;
   phone?: string;
+  username?: string;
+  password?:string;
   birthplace?: string;
   age?: number;
   artisticStyle: string;
   biography?: string;
   specializations: string[];
-  socialLinks?: {
-    website?: string;
-    instagram?: string;
-    twitter?: string;
-  };
+  socialMedia:{}
 }
 
 interface ArtistsState {

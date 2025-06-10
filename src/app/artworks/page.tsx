@@ -36,14 +36,36 @@ import {
   AlertCircle,
   X,
 } from "lucide-react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Alert,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Container,
+  Divider,
+} from "@mui/material";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { uploadFile } from "@/store/slices/uploadSlice";
 
 const artMediums = [
   "Oil Painting",
@@ -60,7 +82,7 @@ const artMediums = [
   "Collage",
   "Printmaking",
   "Ceramics",
-  "Installation"
+  "Installation",
 ];
 
 const artStyles = [
@@ -77,7 +99,7 @@ const artStyles = [
   "Street Art",
   "Cubism",
   "Baroque",
-  "Renaissance"
+  "Renaissance",
 ];
 
 const artTags = [
@@ -95,7 +117,7 @@ const artTags = [
   "Colorful",
   "Monochrome",
   "Large Scale",
-  "Miniature"
+  "Miniature",
 ];
 
 export default function ArtworksPage() {
@@ -103,14 +125,18 @@ export default function ArtworksPage() {
   const { artworks, isLoading, error, searchQuery, filters, pagination } =
     useAppSelector((state) => state.artworks);
   const { artists } = useAppSelector((state) => state.artists);
+  const { user } = useAppSelector((state) => state.auth);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const isSubmitting = isLoading || uploading;
 
   const [formData, setFormData] = useState({
     title: "",
@@ -119,15 +145,17 @@ export default function ArtworksPage() {
     galleryId: "",
     medium: "",
     dimensions: "",
-    year: new Date().getFullYear(),
+    yearCreated: new Date().getFullYear(),
     price: "",
     isForSale: false,
     tags: [] as string[],
-    image: null as File | null,
+    // image: null as File | null,
   });
 
   useEffect(() => {
-    dispatch(fetchArtworks({ page: 1, limit: 12 }));
+    dispatch(
+      fetchArtworks({ artistId: parseInt(user.id), page: 1, limit: 12 })
+    );
     dispatch(fetchArtists({ page: 1, limit: 100 }));
   }, [dispatch]);
 
@@ -140,12 +168,31 @@ export default function ArtworksPage() {
 
   const handleSearch = (value: string) => {
     dispatch(setSearchQuery(value));
-    dispatch(fetchArtworks({ search: value, page: 1, limit: pagination.limit }));
+    dispatch(
+      fetchArtworks({ search: value, page: 1, limit: pagination.limit })
+    );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleFilterChange = (newFilters: any) => {
     dispatch(setFilters(newFilters));
-    dispatch(fetchArtworks({ filters: newFilters, page: 1, limit: pagination.limit }));
+    dispatch(
+      fetchArtworks({ filters: newFilters, page: 1, limit: pagination.limit })
+    );
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,21 +208,39 @@ export default function ArtworksPage() {
   };
 
   const handleCreateArtwork = async () => {
-    if (!formData.title.trim() || !formData.artistId || !formData.medium || !formData.image) {
-      alert("Please fill in all required fields and upload an image");
+    if (!user?.id) {
+      alert("User not authenticated");
+      return;
+    }
+    if (!imageFile) {
+      alert("Please select an image file");
       return;
     }
 
     try {
-      const artworkData = {
-        ...formData,
-        price: formData.price ? Number.parseFloat(formData.price) : undefined,
-      };
-      await dispatch(createArtwork(artworkData)).unwrap();
-      setIsCreateDialogOpen(false);
-      resetForm();
-      alert("Artwork created successfully!");
-      dispatch(fetchArtworks({ page: 1, limit: pagination.limit }));
+      setUploading(true);
+      const uploadResult: any = await dispatch(uploadFile({ file: imageFile }));
+
+      if (uploadResult.payload?.data?.fileUrl) {
+        const artworkData = {
+          ...formData,
+          galleryId: Number(formData.galleryId),
+          yearCreated: formData.yearCreated
+            ? Number(formData.yearCreated)
+            : undefined,
+          price: formData.price ? Number.parseFloat(formData.price) : undefined,
+          imageUrl: uploadResult.payload.data.fileUrl,
+          thumbnailUrl: uploadResult.payload.data.fileUrl,
+        };
+
+        await dispatch(createArtwork(artworkData)).unwrap();
+        setIsCreateDialogOpen(false);
+        resetForm();
+        alert("Artwork created successfully!");
+        dispatch(fetchArtworks({ page: 1, limit: pagination.limit }));
+      } else {
+        alert("Failed to upload image");
+      }
     } catch (error: any) {
       alert(error.message || "Failed to create artwork");
     }
@@ -184,34 +249,61 @@ export default function ArtworksPage() {
   const handleUpdateArtwork = async () => {
     if (!selectedArtwork) return;
 
-    if (!formData.title.trim() || !formData.artistId || !formData.medium) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
     try {
+      setUploading(true);
+
+      let imageUrl = selectedArtwork?.imageUrl;
+
+      // Upload new image if selected
+      if (imageFile) {
+        const uploadResult: any = await dispatch(
+          uploadFile({ file: imageFile })
+        );
+        if (uploadResult.payload?.data?.fileUrl) {
+          imageUrl = uploadResult.payload.data.fileUrl;
+        }
+      }
+
       const artworkData = {
         ...formData,
-        price: formData.price ? Number.parseFloat(formData.price) : undefined,
+        galleryId: Number(formData.galleryId),
+        yearCreated: formData.yearCreated
+          ? Number(formData.yearCreated)
+          : undefined,
+        price: formData.price ? Number(formData.price) : undefined,
+        imageUrl: imageUrl || "",
+        thumbnailUrl: imageUrl || "",
       };
+
       await dispatch(
         updateArtwork({ id: selectedArtwork.id, data: artworkData })
       ).unwrap();
       setIsEditDialogOpen(false);
       resetForm();
       alert("Artwork updated successfully!");
-      dispatch(fetchArtworks({ page: pagination.page, limit: pagination.limit }));
+      dispatch(
+        fetchArtworks({ page: pagination.page, limit: pagination.limit })
+      );
     } catch (error: any) {
       alert(error.message || "Failed to update artwork");
     }
   };
 
-  const handleDeleteArtwork = async (artworkId: string, artworkTitle: string) => {
-    if (window.confirm(`Are you sure you want to delete "${artworkTitle}"? This action cannot be undone.`)) {
+  const handleDeleteArtwork = async (
+    artworkId: string,
+    artworkTitle: string
+  ) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${artworkTitle}"? This action cannot be undone.`
+      )
+    ) {
       try {
         await dispatch(deleteArtwork(artworkId)).unwrap();
         alert("Artwork deleted successfully!");
-        dispatch(fetchArtworks({ page: pagination.page, limit: pagination.limit }));
+        dispatch(
+          fetchArtworks({ page: pagination.page, limit: pagination.limit })
+        );
       } catch (error: any) {
         alert(error.message || "Failed to delete artwork");
       }
@@ -226,7 +318,7 @@ export default function ArtworksPage() {
       galleryId: "",
       medium: "",
       dimensions: "",
-      year: new Date().getFullYear(),
+      yearCreated: new Date().getFullYear(),
       price: "",
       isForSale: false,
       tags: [],
@@ -245,7 +337,7 @@ export default function ArtworksPage() {
       galleryId: artwork.galleryId || "",
       medium: artwork.medium || "",
       dimensions: artwork.dimensions || "",
-      year: artwork.year || new Date().getFullYear(),
+      yearCreated: artwork.yearCreated || new Date().getFullYear(),
       price: artwork.price ? artwork.price.toString() : "",
       isForSale: artwork.isForSale || false,
       tags: artwork.tags || [],
@@ -270,12 +362,14 @@ export default function ArtworksPage() {
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchArtworks({
-      page,
-      limit: pagination.limit,
-      search: searchQuery,
-      filters
-    }));
+    dispatch(
+      fetchArtworks({
+        page,
+        limit: pagination.limit,
+        search: searchQuery,
+        filters,
+      })
+    );
   };
 
   const clearAllFilters = () => {
@@ -300,7 +394,8 @@ export default function ArtworksPage() {
                     Artworks Management
                   </h1>
                   <p className="text-gray-600 text-lg">
-                    Manage artwork collections, pricing, and exhibitions - {pagination.total} total artworks
+                    Manage artwork collections, pricing, and exhibitions -{" "}
+                    {pagination.total} total artworks
                   </p>
                 </div>
                 <motion.div
@@ -318,7 +413,7 @@ export default function ArtworksPage() {
               </div>
 
               {/* Search, Filters and View Toggle */}
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              {/* <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -361,7 +456,7 @@ export default function ArtworksPage() {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Filter Panel */}
               <AnimatePresence>
@@ -457,7 +552,9 @@ export default function ArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                minPrice: e.target.value ? Number.parseFloat(e.target.value) : null,
+                                minPrice: e.target.value
+                                  ? Number.parseFloat(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -469,7 +566,9 @@ export default function ArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                maxPrice: e.target.value ? Number.parseFloat(e.target.value) : null,
+                                maxPrice: e.target.value
+                                  ? Number.parseFloat(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -489,7 +588,13 @@ export default function ArtworksPage() {
               transition={{ delay: 0.2 }}
             >
               {isLoading ? (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      : "grid-cols-1"
+                  }`}
+                >
                   {Array.from({ length: 8 }).map((_, index) => (
                     <div
                       key={index}
@@ -514,7 +619,11 @@ export default function ArtworksPage() {
                   </h3>
                   <p className="text-gray-500 mb-6">{error}</p>
                   <Button
-                    onClick={() => dispatch(fetchArtworks({ page: 1, limit: pagination.limit }))}
+                    onClick={() =>
+                      dispatch(
+                        fetchArtworks({ page: 1, limit: pagination.limit })
+                      )
+                    }
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                   >
                     Try Again
@@ -546,7 +655,13 @@ export default function ArtworksPage() {
                   </Button>
                 </motion.div>
               ) : (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      : "grid-cols-1"
+                  }`}
+                >
                   {artworks.map((artwork, index) => (
                     <motion.div
                       key={artwork.id}
@@ -555,10 +670,10 @@ export default function ArtworksPage() {
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ y: -5 }}
                       className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 ${
-                        viewMode === 'list' ? 'flex items-center gap-4' : ''
+                        viewMode === "list" ? "flex items-center gap-4" : ""
                       }`}
                     >
-                      {viewMode === 'grid' ? (
+                      {viewMode === "grid" ? (
                         <div>
                           {/* Image */}
                           <div className="relative h-48 bg-gray-100">
@@ -590,7 +705,9 @@ export default function ArtworksPage() {
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => handleDeleteArtwork(artwork.id, artwork.title)}
+                                onClick={() =>
+                                  handleDeleteArtwork(artwork.id, artwork.title)
+                                }
                                 className="p-2 bg-white/90 text-red-600 rounded-lg hover:bg-white transition-colors shadow-sm"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -622,12 +739,12 @@ export default function ArtworksPage() {
                               </div>
                               <div className="flex items-center text-sm text-gray-600">
                                 <Calendar className="w-4 h-4 mr-2 text-green-500" />
-                                {artwork.year}
+                                {artwork.yearCreated}
                               </div>
                               {artwork.price && (
                                 <div className="flex items-center text-sm font-semibold text-green-600">
-                                  <DollarSign className="w-4 h-4 mr-1" />
-                                  ${artwork.price.toLocaleString()}
+                                  <DollarSign className="w-4 h-4 mr-1" />$
+                                  {artwork.price.toLocaleString()}
                                 </div>
                               )}
                             </div>
@@ -692,12 +809,12 @@ export default function ArtworksPage() {
                               </div>
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1 text-green-500" />
-                                {artwork.year}
+                                {artwork.yearCreated}
                               </div>
                               {artwork.price && (
                                 <div className="flex items-center font-semibold text-green-600">
-                                  <DollarSign className="w-4 h-4 mr-1" />
-                                  ${artwork.price.toLocaleString()}
+                                  <DollarSign className="w-4 h-4 mr-1" />$
+                                  {artwork.price.toLocaleString()}
                                 </div>
                               )}
                             </div>
@@ -736,7 +853,9 @@ export default function ArtworksPage() {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDeleteArtwork(artwork.id, artwork.title)}
+                              onClick={() =>
+                                handleDeleteArtwork(artwork.id, artwork.title)
+                              }
                               className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -763,33 +882,38 @@ export default function ArtworksPage() {
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
 
-                  {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-                    let page;
-                    if (pagination.totalPages <= 5) {
-                      page = i + 1;
-                    } else if (pagination.page <= 3) {
-                      page = i + 1;
-                    } else if (pagination.page >= pagination.totalPages - 2) {
-                      page = pagination.totalPages - 4 + i;
-                    } else {
-                      page = pagination.page - 2 + i;
-                    }
+                  {Array.from(
+                    { length: Math.min(pagination.totalPages, 5) },
+                    (_, i) => {
+                      let page;
+                      if (pagination.totalPages <= 5) {
+                        page = i + 1;
+                      } else if (pagination.page <= 3) {
+                        page = i + 1;
+                      } else if (pagination.page >= pagination.totalPages - 2) {
+                        page = pagination.totalPages - 4 + i;
+                      } else {
+                        page = pagination.page - 2 + i;
+                      }
 
-                    return (
-                      <Button
-                        key={page}
-                        variant={pagination.page === page ? "default" : "outline"}
-                        onClick={() => handlePageChange(page)}
-                        className={
-                          pagination.page === page
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                            : "border-blue-200 hover:border-blue-400"
-                        }
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
+                      return (
+                        <Button
+                          key={page}
+                          variant={
+                            pagination.page === page ? "default" : "outline"
+                          }
+                          onClick={() => handlePageChange(page)}
+                          className={
+                            pagination.page === page
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                              : "border-blue-200 hover:border-blue-400"
+                          }
+                        >
+                          {page}
+                        </Button>
+                      );
+                    }
+                  )}
 
                   <Button
                     variant="outline"
@@ -838,23 +962,24 @@ export default function ArtworksPage() {
                   />
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium">Artist *</Label>
-                  <select
-                    value={formData.artistId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, artistId: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select an artist</option>
-                    {artists.map((artist) => (
-                      <option key={artist.id} value={artist.id}>
-                        {artist.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* <div>
+
+                                    <Label className="text-sm font-medium">Artist *</Label>
+                                    <select
+                                        value={formData.artistId}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, artistId: e.target.value })
+                                        }
+                                        className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Select an artist</option>
+                                        {artists?.map((artist) => (
+                                            <option key={artist.id} value={artist.id}>
+                                                {artist.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div> */}
 
                 <div>
                   <Label className="text-sm font-medium">Medium *</Label>
@@ -890,9 +1015,12 @@ export default function ArtworksPage() {
                   <Label className="text-sm font-medium">Year</Label>
                   <Input
                     type="number"
-                    value={formData.year}
+                    value={formData.yearCreated}
                     onChange={(e) =>
-                      setFormData({ ...formData, year: Number.parseInt(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        yearCreated: Number.parseInt(e.target.value),
+                      })
                     }
                     className="mt-1"
                   />
@@ -935,7 +1063,7 @@ export default function ArtworksPage() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={handleFileChange}
                       className="hidden"
                       id="image-upload"
                     />
@@ -958,6 +1086,12 @@ export default function ArtworksPage() {
                         </div>
                       )}
                     </label>
+
+                    {imageFile && (
+                      <Typography variant="body2" color="text.secondary">
+                        {imageFile.name}
+                      </Typography>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1005,6 +1139,7 @@ export default function ArtworksPage() {
             <div className="flex justify-end space-x-3 mt-6">
               <Button
                 variant="outline"
+                disabled={isSubmitting}
                 onClick={() => {
                   setIsCreateDialogOpen(false);
                   setIsEditDialogOpen(false);
@@ -1017,10 +1152,22 @@ export default function ArtworksPage() {
                 onClick={
                   isCreateDialogOpen ? handleCreateArtwork : handleUpdateArtwork
                 }
-                disabled={!formData.title || !formData.artistId || !formData.medium || (isCreateDialogOpen && !formData.image) || isLoading}
+                disabled={
+                  !formData.title ||
+                  !formData.description ||
+                  !formData.medium ||
+                  isLoading
+                }
+                startIcon={
+                  isSubmitting ? <CircularProgress size={20} /> : undefined
+                }
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
-                {isLoading ? "Saving..." : (isCreateDialogOpen ? "Create Artwork" : "Update Artwork")}
+                {isLoading
+                  ? "Saving..."
+                  : isCreateDialogOpen
+                  ? "Create Artwork"
+                  : "Update Artwork"}
               </Button>
             </div>
           </DialogContent>
@@ -1063,25 +1210,35 @@ export default function ArtworksPage() {
                         </div>
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1 text-green-500" />
-                          {selectedArtwork.year}
+                          {selectedArtwork.yearCreated}
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium text-gray-700">Medium</Label>
-                        <p className="text-gray-900">{selectedArtwork.medium}</p>
+                        <Label className="text-sm font-medium text-gray-700">
+                          Medium
+                        </Label>
+                        <p className="text-gray-900">
+                          {selectedArtwork.medium}
+                        </p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-gray-700">Dimensions</Label>
-                        <p className="text-gray-900">{selectedArtwork.dimensions || "Not specified"}</p>
+                        <Label className="text-sm font-medium text-gray-700">
+                          Dimensions
+                        </Label>
+                        <p className="text-gray-900">
+                          {selectedArtwork.dimensions || "Not specified"}
+                        </p>
                       </div>
                     </div>
 
                     {selectedArtwork.price && (
                       <div>
-                        <Label className="text-sm font-medium text-gray-700">Price</Label>
+                        <Label className="text-sm font-medium text-gray-700">
+                          Price
+                        </Label>
                         <p className="text-2xl font-bold text-green-600">
                           ${selectedArtwork.price.toLocaleString()}
                         </p>
@@ -1089,7 +1246,9 @@ export default function ArtworksPage() {
                     )}
 
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Availability</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Availability
+                      </Label>
                       <Badge
                         className={
                           selectedArtwork.isForSale
@@ -1097,29 +1256,36 @@ export default function ArtworksPage() {
                             : "bg-gray-100 text-gray-700 border border-gray-200"
                         }
                       >
-                        {selectedArtwork.isForSale ? "For Sale" : "Not For Sale"}
+                        {selectedArtwork.isForSale
+                          ? "For Sale"
+                          : "Not For Sale"}
                       </Badge>
                     </div>
 
-                    {selectedArtwork.tags && selectedArtwork.tags.length > 0 && (
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-2">Tags</Label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedArtwork.tags.map((tag: string) => (
-                            <Badge
-                              key={tag}
-                              className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
+                    {selectedArtwork.tags &&
+                      selectedArtwork.tags.length > 0 && (
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700 mb-2">
+                            Tags
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedArtwork.tags.map((tag: string) => (
+                              <Badge
+                                key={tag}
+                                className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {selectedArtwork.description && (
                       <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-2">Description</Label>
+                        <Label className="text-sm font-medium text-gray-700 mb-2">
+                          Description
+                        </Label>
                         <p className="text-gray-700 leading-relaxed">
                           {selectedArtwork.description}
                         </p>

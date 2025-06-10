@@ -38,7 +38,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,7 +66,7 @@ const artisticStyles = [
   "Street Art",
   "Cubism",
   "Baroque",
-  "Renaissance"
+  "Renaissance",
 ];
 
 const specializations = [
@@ -78,7 +83,7 @@ const specializations = [
   "Textile Art",
   "Conceptual Art",
   "Land Art",
-  "Graffiti"
+  "Graffiti",
 ];
 
 export default function ArtistsPage() {
@@ -91,22 +96,20 @@ export default function ArtistsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<any>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [formData, setFormData] = useState<ArtistFormData>({
-    name: "",
+    fullname: "",
     email: "",
     phone: "",
+    username: "",
+    password: "",
     birthplace: "",
     age: undefined,
     artisticStyle: "",
     biography: "",
     specializations: [],
-    socialLinks: {
-      website: "",
-      instagram: "",
-      twitter: "",
-    },
+    socialMedia: {},
   });
 
   useEffect(() => {
@@ -127,11 +130,17 @@ export default function ArtistsPage() {
 
   const handleFilterChange = (newFilters: any) => {
     dispatch(setFilters(newFilters));
-    dispatch(fetchArtists({ filters: newFilters, page: 1, limit: pagination.limit }));
+    dispatch(
+      fetchArtists({ filters: newFilters, page: 1, limit: pagination.limit })
+    );
   };
 
   const handleCreateArtist = async () => {
-    if (!formData.name.trim() || !formData.email.trim() || !formData.artisticStyle) {
+    if (
+      !formData.fullname.trim() ||
+      !formData.email.trim() ||
+      !formData.artisticStyle
+    ) {
       alert("Please fill in all required fields");
       return;
     }
@@ -150,7 +159,11 @@ export default function ArtistsPage() {
   const handleUpdateArtist = async () => {
     if (!selectedArtist) return;
 
-    if (!formData.name.trim() || !formData.email.trim() || !formData.artisticStyle) {
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.artisticStyle
+    ) {
       alert("Please fill in all required fields");
       return;
     }
@@ -162,18 +175,26 @@ export default function ArtistsPage() {
       setIsEditDialogOpen(false);
       resetForm();
       alert("Artist updated successfully!");
-      dispatch(fetchArtists({ page: pagination.page, limit: pagination.limit }));
+      dispatch(
+        fetchArtists({ page: pagination.page, limit: pagination.limit })
+      );
     } catch (error: any) {
       alert(error.message || "Failed to update artist");
     }
   };
 
   const handleDeleteArtist = async (artistId: number, artistName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${artistName}"? This action cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${artistName}"? This action cannot be undone.`
+      )
+    ) {
       try {
         await dispatch(deleteArtist(artistId)).unwrap();
         alert("Artist deleted successfully!");
-        dispatch(fetchArtists({ page: pagination.page, limit: pagination.limit }));
+        dispatch(
+          fetchArtists({ page: pagination.page, limit: pagination.limit })
+        );
       } catch (error: any) {
         alert(error.message || "Failed to delete artist");
       }
@@ -182,19 +203,17 @@ export default function ArtistsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      fullname: "",
       email: "",
       phone: "",
+      username: "",
+      password: "",
       birthplace: "",
       age: undefined,
       artisticStyle: "",
       biography: "",
       specializations: [],
-      socialLinks: {
-        website: "",
-        instagram: "",
-        twitter: "",
-      },
+      socialMedia: {},
     });
     setSelectedArtist(null);
   };
@@ -202,7 +221,7 @@ export default function ArtistsPage() {
   const openEditDialog = (artist: any) => {
     setSelectedArtist(artist);
     setFormData({
-      name: artist.name || "",
+      fullname: artist.fullname || "",
       email: artist.email || "",
       phone: artist.phone || "",
       birthplace: artist.birthplace || "",
@@ -210,11 +229,7 @@ export default function ArtistsPage() {
       artisticStyle: artist.artisticStyle || "",
       biography: artist.biography || "",
       specializations: artist.specializations || [],
-      socialLinks: artist.socialLinks || {
-        website: "",
-        instagram: "",
-        twitter: "",
-      },
+      socialMedia: artist.socialMedia || {},
     });
     setIsEditDialogOpen(true);
   };
@@ -234,12 +249,14 @@ export default function ArtistsPage() {
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchArtists({
-      page,
-      limit: pagination.limit,
-      search: searchQuery,
-      filters
-    }));
+    dispatch(
+      fetchArtists({
+        page,
+        limit: pagination.limit,
+        search: searchQuery,
+        filters,
+      })
+    );
   };
 
   const clearAllFilters = () => {
@@ -264,7 +281,8 @@ export default function ArtistsPage() {
                     Artists Management
                   </h1>
                   <p className="text-gray-600 text-lg">
-                    Manage artist profiles, specializations, and portfolios - {pagination.total} total artists
+                    Manage artist profiles, specializations, and portfolios -{" "}
+                    {pagination.total} total artists
                   </p>
                 </div>
                 <motion.div
@@ -282,7 +300,7 @@ export default function ArtistsPage() {
               </div>
 
               {/* Search, Filters and View Toggle */}
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              {/* <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -310,22 +328,22 @@ export default function ArtistsPage() {
                   </Button>
                   <div className="flex border border-gray-200 rounded-xl overflow-hidden">
                     <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                      onClick={() => setViewMode('grid')}
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      onClick={() => setViewMode("grid")}
                       className="rounded-none"
                     >
                       Grid
                     </Button>
                     <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
-                      onClick={() => setViewMode('list')}
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      onClick={() => setViewMode("list")}
                       className="rounded-none"
                     >
                       List
                     </Button>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Filter Panel */}
               <AnimatePresence>
@@ -422,7 +440,13 @@ export default function ArtistsPage() {
               transition={{ delay: 0.2 }}
             >
               {isLoading ? (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      : "grid-cols-1"
+                  }`}
+                >
                   {Array.from({ length: 8 }).map((_, index) => (
                     <div
                       key={index}
@@ -449,13 +473,17 @@ export default function ArtistsPage() {
                   </h3>
                   <p className="text-gray-500 mb-6">{error}</p>
                   <Button
-                    onClick={() => dispatch(fetchArtists({ page: 1, limit: pagination.limit }))}
+                    onClick={() =>
+                      dispatch(
+                        fetchArtists({ page: 1, limit: pagination.limit })
+                      )
+                    }
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                   >
                     Try Again
                   </Button>
                 </div>
-              ) : artists.length === 0 ? (
+              ) : artists?.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -468,7 +496,9 @@ export default function ArtistsPage() {
                     No Artists Found
                   </h3>
                   <p className="text-gray-500 mb-6">
-                    {searchQuery || filters.artisticStyle || filters.specialization
+                    {searchQuery ||
+                    filters.artisticStyle ||
+                    filters.specialization
                       ? "Try adjusting your search criteria or filters."
                       : "Start building your artist network by adding your first artist."}
                   </p>
@@ -481,8 +511,14 @@ export default function ArtistsPage() {
                   </Button>
                 </motion.div>
               ) : (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-                  {artists.map((artist, index) => (
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      : "grid-cols-1"
+                  }`}
+                >
+                  {artists?.map((artist, index) => (
                     <motion.div
                       key={artist.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -490,10 +526,12 @@ export default function ArtistsPage() {
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ y: -5 }}
                       className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 ${
-                        viewMode === 'list' ? 'flex items-center p-4 gap-4' : 'p-6'
+                        viewMode === "list"
+                          ? "flex items-center p-4 gap-4"
+                          : "p-6"
                       }`}
                     >
-                      {viewMode === 'grid' ? (
+                      {viewMode === "grid" ? (
                         <div>
                           <div className="flex items-center justify-between mb-4">
                             <Avatar className="w-16 h-16 border-4 border-gradient-to-r from-purple-400 to-pink-400">
@@ -522,7 +560,9 @@ export default function ArtistsPage() {
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => handleDeleteArtist(artist.id, artist.name)}
+                                onClick={() =>
+                                  handleDeleteArtist(artist.id, artist.name)
+                                }
                                 className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -575,7 +615,9 @@ export default function ArtistsPage() {
 
                           <div className="flex items-center justify-between">
                             <Badge
-                              variant={artist.isActive ? "default" : "destructive"}
+                              variant={
+                                artist.isActive ? "default" : "destructive"
+                              }
                               className={
                                 artist.isActive
                                   ? "bg-green-100 text-green-700 border border-green-200"
@@ -585,13 +627,13 @@ export default function ArtistsPage() {
                               {artist.isActive ? "Active" : "Inactive"}
                             </Badge>
                             <div className="flex space-x-2">
-                              {artist.socialLinks?.website && (
+                              {artist?.socialMedia?.website && (
                                 <Globe className="w-4 h-4 text-blue-500" />
                               )}
-                              {artist.socialLinks?.instagram && (
+                              {artist.socialMedia?.instagram && (
                                 <Instagram className="w-4 h-4 text-pink-500" />
                               )}
-                              {artist.socialLinks?.twitter && (
+                              {artist.socialMedia?.twitter && (
                                 <Twitter className="w-4 h-4 text-blue-400" />
                               )}
                             </div>
@@ -612,7 +654,9 @@ export default function ArtistsPage() {
                                 {artist.name}
                               </h3>
                               <Badge
-                                variant={artist.isActive ? "default" : "destructive"}
+                                variant={
+                                  artist.isActive ? "default" : "destructive"
+                                }
                                 className={
                                   artist.isActive
                                     ? "bg-green-100 text-green-700 border border-green-200"
@@ -639,15 +683,17 @@ export default function ArtistsPage() {
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-1">
-                              {artist.specializations?.slice(0, 3).map((spec: string) => (
-                                <Badge
-                                  key={spec}
-                                  variant="secondary"
-                                  className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200"
-                                >
-                                  {spec}
-                                </Badge>
-                              ))}
+                              {artist.specializations
+                                ?.slice(0, 3)
+                                .map((spec: string) => (
+                                  <Badge
+                                    key={spec}
+                                    variant="secondary"
+                                    className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200"
+                                  >
+                                    {spec}
+                                  </Badge>
+                                ))}
                             </div>
                           </div>
                           <div className="flex space-x-1">
@@ -670,7 +716,9 @@ export default function ArtistsPage() {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDeleteArtist(artist.id, artist.name)}
+                              onClick={() =>
+                                handleDeleteArtist(artist.id, artist.name)
+                              }
                               className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -697,33 +745,38 @@ export default function ArtistsPage() {
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
 
-                  {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-                    let page;
-                    if (pagination.totalPages <= 5) {
-                      page = i + 1;
-                    } else if (pagination.page <= 3) {
-                      page = i + 1;
-                    } else if (pagination.page >= pagination.totalPages - 2) {
-                      page = pagination.totalPages - 4 + i;
-                    } else {
-                      page = pagination.page - 2 + i;
-                    }
+                  {Array.from(
+                    { length: Math.min(pagination.totalPages, 5) },
+                    (_, i) => {
+                      let page;
+                      if (pagination.totalPages <= 5) {
+                        page = i + 1;
+                      } else if (pagination.page <= 3) {
+                        page = i + 1;
+                      } else if (pagination.page >= pagination.totalPages - 2) {
+                        page = pagination.totalPages - 4 + i;
+                      } else {
+                        page = pagination.page - 2 + i;
+                      }
 
-                    return (
-                      <Button
-                        key={page}
-                        variant={pagination.page === page ? "default" : "outline"}
-                        onClick={() => handlePageChange(page)}
-                        className={
-                          pagination.page === page
-                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-                            : "border-purple-200 hover:border-purple-400"
-                        }
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
+                      return (
+                        <Button
+                          key={page}
+                          variant={
+                            pagination.page === page ? "default" : "outline"
+                          }
+                          onClick={() => handlePageChange(page)}
+                          className={
+                            pagination.page === page
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                              : "border-purple-200 hover:border-purple-400"
+                          }
+                        >
+                          {page}
+                        </Button>
+                      );
+                    }
+                  )}
 
                   <Button
                     variant="outline"
@@ -762,9 +815,9 @@ export default function ArtistsPage() {
                 <div>
                   <Label className="text-sm font-medium">Name *</Label>
                   <Input
-                    value={formData.name}
+                    value={formData.fullname}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, fullname: e.target.value })
                     }
                     placeholder="Artist full name"
                     className="mt-1"
@@ -797,6 +850,30 @@ export default function ArtistsPage() {
                 </div>
 
                 <div>
+                  <Label className="text-sm font-medium">Username</Label>
+                  <Input
+                    value={formData.username}
+                    onChange={(e) =>
+                      setFormData({ ...formData, username: e.target.value })
+                    }
+                    placeholder=""
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Password</Label>
+                  <Input
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="Enter minimum 6 digit password"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
                   <Label className="text-sm font-medium">Birthplace</Label>
                   <Input
                     value={formData.birthplace}
@@ -816,7 +893,9 @@ export default function ArtistsPage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        age: e.target.value ? Number.parseInt(e.target.value) : undefined,
+                        age: e.target.value
+                          ? Number.parseInt(e.target.value)
+                          : undefined,
                       })
                     }
                     placeholder="35"
@@ -827,7 +906,9 @@ export default function ArtistsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium">Artistic Style *</Label>
+                  <Label className="text-sm font-medium">
+                    Artistic Style *
+                  </Label>
                   <select
                     value={formData.artisticStyle}
                     onChange={(e) =>
@@ -850,12 +931,12 @@ export default function ArtistsPage() {
                 <div>
                   <Label className="text-sm font-medium">Website</Label>
                   <Input
-                    value={formData.socialLinks?.website || ""}
+                    value={formData.socialMedia?.website || ""}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        socialLinks: {
-                          ...formData.socialLinks,
+                        socialMedia: {
+                          ...formData.socialMedia,
                           website: e.target.value,
                         },
                       })
@@ -868,12 +949,12 @@ export default function ArtistsPage() {
                 <div>
                   <Label className="text-sm font-medium">Instagram</Label>
                   <Input
-                    value={formData.socialLinks?.instagram || ""}
+                    value={formData.socialMedia?.instagram || ""}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        socialLinks: {
-                          ...formData.socialLinks,
+                        socialMedia: {
+                          ...formData.socialMedia,
                           instagram: e.target.value,
                         },
                       })
@@ -886,12 +967,12 @@ export default function ArtistsPage() {
                 <div>
                   <Label className="text-sm font-medium">Twitter</Label>
                   <Input
-                    value={formData.socialLinks?.twitter || ""}
+                    value={formData.socialMedia?.twitter || ""}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        socialLinks: {
-                          ...formData.socialLinks,
+                        socialMedia: {
+                          ...formData.socialMedia,
                           twitter: e.target.value,
                         },
                       })
@@ -957,10 +1038,19 @@ export default function ArtistsPage() {
                 onClick={
                   isCreateDialogOpen ? handleCreateArtist : handleUpdateArtist
                 }
-                disabled={!formData.name || !formData.email || !formData.artisticStyle || isLoading}
+                disabled={
+                  !formData.fullname ||
+                  !formData.email ||
+                  !formData.artisticStyle ||
+                  isLoading
+                }
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
               >
-                {isLoading ? "Saving..." : (isCreateDialogOpen ? "Create Artist" : "Update Artist")}
+                {isLoading
+                  ? "Saving..."
+                  : isCreateDialogOpen
+                  ? "Create Artist"
+                  : "Update Artist"}
               </Button>
             </div>
           </DialogContent>
@@ -1048,9 +1138,9 @@ export default function ArtistsPage() {
                         Social Links
                       </h4>
                       <div className="space-y-2">
-                        {selectedArtist.socialLinks?.website && (
+                        {selectedArtist.socialMedia?.website && (
                           <a
-                            href={selectedArtist.socialLinks.website}
+                            href={selectedArtist.socialMedia.website}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center text-sm text-blue-600 hover:text-blue-800"
@@ -1059,9 +1149,9 @@ export default function ArtistsPage() {
                             Website
                           </a>
                         )}
-                        {selectedArtist.socialLinks?.instagram && (
+                        {selectedArtist?.socialMedia?.instagram && (
                           <a
-                            href={`https://instagram.com/${selectedArtist.socialLinks.instagram.replace(
+                            href={`https://instagram.com/${selectedArtist.socialMedia.instagram.replace(
                               "@",
                               ""
                             )}`}
@@ -1070,12 +1160,12 @@ export default function ArtistsPage() {
                             className="flex items-center text-sm text-pink-600 hover:text-pink-800"
                           >
                             <Instagram className="w-4 h-4 mr-2" />
-                            {selectedArtist.socialLinks.instagram}
+                            {selectedArtist?.socialMedia?.instagram}
                           </a>
                         )}
-                        {selectedArtist.socialLinks?.twitter && (
+                        {selectedArtist?.socialMedia?.twitter && (
                           <a
-                            href={`https://twitter.com/${selectedArtist.socialLinks.twitter.replace(
+                            href={`https://twitter.com/${selectedArtist?.socialMedia.twitter.replace(
                               "@",
                               ""
                             )}`}
@@ -1084,7 +1174,7 @@ export default function ArtistsPage() {
                             className="flex items-center text-sm text-blue-400 hover:text-blue-600"
                           >
                             <Twitter className="w-4 h-4 mr-2" />
-                            {selectedArtist.socialLinks.twitter}
+                            {selectedArtist?.socialMedia?.twitter}
                           </a>
                         )}
                       </div>
@@ -1098,14 +1188,16 @@ export default function ArtistsPage() {
                           Specializations
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {selectedArtist.specializations.map((spec: string) => (
-                            <Badge
-                              key={spec}
-                              className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200"
-                            >
-                              {spec}
-                            </Badge>
-                          ))}
+                          {selectedArtist.specializations.map(
+                            (spec: string) => (
+                              <Badge
+                                key={spec}
+                                className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200"
+                              >
+                                {spec}
+                              </Badge>
+                            )
+                          )}
                         </div>
                       </div>
                     )}
