@@ -20,7 +20,7 @@ import { type UserRole, roleLabels } from "@/types/user";
 
 const navigationItems = [
   { label: "Home", href: "/", icon: Sparkles },
-  { label: "Artists", href: "/artists", icon: Users },
+  // { label: "Artists", href: "/artists", icon: Users },
   // Gallery nav hidden for artists; replaced below
   // { label: "Gallery", href: "/gallery", icon: Camera },
   { label: "About", href: "/about", icon: User },
@@ -58,9 +58,7 @@ export default function Navbar() {
         href: "/account/artworks/list",
         icon: Camera,
       });
-    } else {
-      items.splice(2, 0, { label: "Gallery", href: "/gallery", icon: Camera });
-    }
+    } 
 
     return items;
   };

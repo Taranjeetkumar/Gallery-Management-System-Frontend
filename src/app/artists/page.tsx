@@ -159,8 +159,8 @@ export default function ArtistsPage() {
   const handleUpdateArtist = async () => {
     if (!selectedArtist) return;
 
-    if (
-      !formData.name.trim() ||
+   if (
+      !formData.fullname.trim() ||
       !formData.email.trim() ||
       !formData.artisticStyle
     ) {
