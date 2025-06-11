@@ -15,60 +15,54 @@ import React, { useState } from "react";
 const mockGalleryItems = [
   {
     id: 1,
-    title: "Abstract Dreams",
+    title: "Contemporary Gallery Space",
     artist: "Sarah Johnson",
-    image:
-      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/23Hve_MfpReo9VeTg1YCE4NMSkRIKJHj.jpeg",
     likes: 124,
     views: 890,
     category: "Abstract",
   },
   {
     id: 2,
-    title: "Urban Landscape",
+    title: "Modern Art Exhibition",
     artist: "Michael Chen",
-    image:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/SynbX6JQrEFbl8H_UnxLxZd-I3JJBbzg.jpeg",
     likes: 89,
     views: 456,
     category: "Photography",
   },
   {
     id: 3,
-    title: "Nature's Symphony",
+    title: "Gallery Showcase",
     artist: "Emma Williams",
-    image:
-      "https://images.unsplash.com/photo-1578662015662-4b5fe45c41b3?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/mX6gZ3qaUgO7WfeuRNIm7cg9EjVYBf3y.jpeg",
     likes: 156,
     views: 1234,
     category: "Nature",
   },
   {
     id: 4,
-    title: "Digital Fusion",
+    title: "Digital Art Collection",
     artist: "Alex Rivera",
-    image:
-      "https://images.unsplash.com/photo-1549490349-8643362aca4e?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/EEXvfgykgRVi0XF3td_LeopRDCtecpiB.jpeg",
     likes: 203,
     views: 1567,
     category: "Digital Art",
   },
   {
     id: 5,
-    title: "Vintage Colors",
+    title: "Classical Sculptures",
     artist: "Lisa Thompson",
-    image:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/oetc32bOHgVpO77Vt-DSAB8MIcRvg-xw.jpeg",
     likes: 78,
     views: 345,
     category: "Vintage",
   },
   {
     id: 6,
-    title: "Modern Sculpture",
+    title: "Museum Collection",
     artist: "David Park",
-    image:
-      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=600&fit=crop",
+    image: "https://ugc.same-assets.com/fT-g5NaSOD0o4UKTiFl8Y3dQzY0bvGIQ.jpeg",
     likes: 167,
     views: 892,
     category: "Sculpture",

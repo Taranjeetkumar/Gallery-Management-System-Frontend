@@ -28,12 +28,20 @@ const LoadingComponent = () => (
 // New inner component for bootstrapping
 function InnerBootstrap({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const token = Cookies.get("authToken");
     if (token) {
       dispatch(getCurrentUser());
     }
-  }, [dispatch]);
+  }, [dispatch, isMounted]);
 
   return <>{children}</>;
 }

@@ -4,14 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
+// ... existing code ... <import statements and component start>
+
 // Mock testimonials data
 const testimonials = [
   {
     id: 1,
     name: "Sarah Johnson",
     role: "Professional Artist",
-    avatar:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b593?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/MnGHNg3SXI6Oj9jxE8QbV8O157thvcx_.jpeg",
     rating: 5,
     text: "ArtCloud has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
     featured: true,
@@ -20,8 +21,7 @@ const testimonials = [
     id: 2,
     name: "Michael Chen",
     role: "Gallery Owner",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/0FsMQKUD2hsyYgcxLYq0wSh5e6OSxl_b.jpeg",
     rating: 5,
     text: "Managing multiple exhibitions has never been easier. The organizational tools and analytics provide incredible insights into visitor engagement and artwork performance.",
     featured: false,
@@ -30,8 +30,7 @@ const testimonials = [
     id: 3,
     name: "Emma Williams",
     role: "Art Collector",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/-lP0k1xtm_uim7fNd1lVdPo6_cOx5Dwa.jpeg",
     rating: 5,
     text: "I've discovered so many amazing artists through ArtCloud. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
     featured: true,
@@ -40,8 +39,7 @@ const testimonials = [
     id: 4,
     name: "David Rodriguez",
     role: "Digital Artist",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/KZz0BSZb9W2rce6BN6UZE8k_zMMCwxTc.jpeg",
     rating: 5,
     text: "The digital gallery features are outstanding. I can present my work in immersive virtual spaces that truly capture the essence of my digital art.",
     featured: false,
@@ -50,8 +48,7 @@ const testimonials = [
     id: 5,
     name: "Lisa Thompson",
     role: "Art Curator",
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/jMLbN20nD0icbxJAlczBkJ1SL7UZdlx6.jpeg",
     rating: 5,
     text: "ArtCloud's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
     featured: true,
@@ -60,28 +57,100 @@ const testimonials = [
     id: 6,
     name: "Alex Rivera",
     role: "Emerging Artist",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+    avatar: "https://ugc.same-assets.com/8Ho_xyagmOTLn1iGp5kKRiQT49C-tcxv.jpeg",
     rating: 5,
     text: "Starting my art career was daunting, but ArtCloud provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
     featured: false,
   },
 ];
 
+// ... existing code ... <rest of component>
+
+// // Mock testimonials data
+// const testimonials = [
+//   {
+//     id: 1,
+//     name: "Sarah Johnson",
+//     role: "Professional Artist",
+//     avatar:
+//       "https://images.unsplash.com/photo-1494790108755-2616b612b593?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "ArtCloud has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
+//     featured: true,
+//   },
+//   {
+//     id: 2,
+//     name: "Michael Chen",
+//     role: "Gallery Owner",
+//     avatar:
+//       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "Managing multiple exhibitions has never been easier. The organizational tools and analytics provide incredible insights into visitor engagement and artwork performance.",
+//     featured: false,
+//   },
+//   {
+//     id: 3,
+//     name: "Emma Williams",
+//     role: "Art Collector",
+//     avatar:
+//       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "I've discovered so many amazing artists through ArtCloud. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
+//     featured: true,
+//   },
+//   {
+//     id: 4,
+//     name: "David Rodriguez",
+//     role: "Digital Artist",
+//     avatar:
+//       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "The digital gallery features are outstanding. I can present my work in immersive virtual spaces that truly capture the essence of my digital art.",
+//     featured: false,
+//   },
+//   {
+//     id: 5,
+//     name: "Lisa Thompson",
+//     role: "Art Curator",
+//     avatar:
+//       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "ArtCloud's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
+//     featured: true,
+//   },
+//   {
+//     id: 6,
+//     name: "Alex Rivera",
+//     role: "Emerging Artist",
+//     avatar:
+//       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+//     rating: 5,
+//     text: "Starting my art career was daunting, but ArtCloud provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
+//     featured: false,
+//   },
+// ];
+
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component is mounted before enabling auto-play
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Auto-play functionality
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isMounted || !isAutoPlaying) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, isMounted]);
+
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);

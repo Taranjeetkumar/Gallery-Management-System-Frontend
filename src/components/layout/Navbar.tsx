@@ -41,6 +41,7 @@ export default function Navbar() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { scrollY } = useScroll();
 
@@ -59,19 +60,23 @@ export default function Navbar() {
         href: "/account/artworks/list",
         icon: Camera,
       });
-    } 
+    }
 
     return items;
   };
 
   useEffect(() => {
+    setIsMounted(true);
 
     console.log("usehcgh : ", role, user);
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
   }, []);
 
   const handleDrawerToggle = () => {
@@ -117,6 +122,7 @@ export default function Navbar() {
             <motion.div
               className="flex items-center space-x-3 cursor-pointer"
               onClick={() => handleNavigation("/")}
+
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}

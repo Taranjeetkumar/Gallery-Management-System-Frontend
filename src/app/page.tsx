@@ -14,6 +14,7 @@ import Testimonials from "@/components/sections/Testimonials";
 export default function Home() {
   const router = useRouter();
   const [animate, setAnimate] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollY } = useScroll();
 
   // Mock auth state - replace with actual Redux state
@@ -24,8 +25,8 @@ export default function Home() {
   const heroY = useTransform(scrollY, [0, 800], [0, 200]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
-
   useEffect(() => {
+    setIsMounted(true);
     setAnimate(true);
   }, []);
 
