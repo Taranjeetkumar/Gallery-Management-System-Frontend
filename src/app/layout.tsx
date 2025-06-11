@@ -10,7 +10,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "ArtCloud Gallery - Manage Your Art Collection",
+  title: "GalleryPro - Manage Your Art Collection",
   description: "Complete gallery management solution for artists, artworks, contacts, staff, and events",
 };
 

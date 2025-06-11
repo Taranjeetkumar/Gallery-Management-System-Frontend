@@ -14,7 +14,7 @@ const testimonials = [
     role: "Professional Artist",
     avatar: "https://ugc.same-assets.com/MnGHNg3SXI6Oj9jxE8QbV8O157thvcx_.jpeg",
     rating: 5,
-    text: "ArtCloud has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
+    text: "GalleryPro has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
     featured: true,
   },
   {
@@ -32,7 +32,7 @@ const testimonials = [
     role: "Art Collector",
     avatar: "https://ugc.same-assets.com/-lP0k1xtm_uim7fNd1lVdPo6_cOx5Dwa.jpeg",
     rating: 5,
-    text: "I've discovered so many amazing artists through ArtCloud. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
+    text: "I've discovered so many amazing artists through GalleryPro. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
     featured: true,
   },
   {
@@ -50,7 +50,7 @@ const testimonials = [
     role: "Art Curator",
     avatar: "https://ugc.same-assets.com/jMLbN20nD0icbxJAlczBkJ1SL7UZdlx6.jpeg",
     rating: 5,
-    text: "ArtCloud's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
+    text: "GalleryPro's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
     featured: true,
   },
   {
@@ -59,7 +59,7 @@ const testimonials = [
     role: "Emerging Artist",
     avatar: "https://ugc.same-assets.com/8Ho_xyagmOTLn1iGp5kKRiQT49C-tcxv.jpeg",
     rating: 5,
-    text: "Starting my art career was daunting, but ArtCloud provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
+    text: "Starting my art career was daunting, but GalleryPro provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
     featured: false,
   },
 ];
@@ -75,7 +75,7 @@ const testimonials = [
 //     avatar:
 //       "https://images.unsplash.com/photo-1494790108755-2616b612b593?w=150&h=150&fit=crop&crop=face",
 //     rating: 5,
-//     text: "ArtCloud has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
+//     text: "GalleryPro has revolutionized how I showcase my artwork. The platform is intuitive, beautiful, and has helped me reach a global audience. My sales have increased by 300% since joining!",
 //     featured: true,
 //   },
 //   {
@@ -95,7 +95,7 @@ const testimonials = [
 //     avatar:
 //       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
 //     rating: 5,
-//     text: "I've discovered so many amazing artists through ArtCloud. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
+//     text: "I've discovered so many amazing artists through GalleryPro. The curation is excellent, and the platform makes it easy to connect with artists and purchase pieces.",
 //     featured: true,
 //   },
 //   {
@@ -115,7 +115,7 @@ const testimonials = [
 //     avatar:
 //       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
 //     rating: 5,
-//     text: "ArtCloud's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
+//     text: "GalleryPro's collaboration tools have transformed how I work with artists. The workflow is seamless, and the presentation quality is museum-grade.",
 //     featured: true,
 //   },
 //   {
@@ -125,7 +125,7 @@ const testimonials = [
 //     avatar:
 //       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
 //     rating: 5,
-//     text: "Starting my art career was daunting, but ArtCloud provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
+//     text: "Starting my art career was daunting, but GalleryPro provided the perfect platform to showcase my work professionally. The community is incredibly supportive.",
 //     featured: false,
 //   },
 // ];
@@ -262,7 +262,7 @@ const Testimonials = () => {
             className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
           >
             Join thousands of artists, collectors, and galleries who trust
-            ArtCloud to showcase and manage their artistic endeavors.
+            GalleryPro to showcase and manage their artistic endeavors.
           </motion.p>
         </motion.div>
 

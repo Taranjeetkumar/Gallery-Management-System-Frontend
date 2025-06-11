@@ -114,7 +114,7 @@ const Footer = () => {
                   <Palette className="w-7 h-7 text-white" />
                 </div>
                 <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  ArtCloud
+                  GalleryPro
                 </span>
               </div>
 
@@ -131,7 +131,7 @@ const Footer = () => {
                   whileHover={{ x: 5 }}
                 >
                   <Mail className="w-5 h-5 text-purple-400" />
-                  <span>hello@artcloud.com</span>
+                  <span>hello@gallerypro.com</span>
                 </motion.div>
                 <motion.div
                   className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors cursor-pointer"
@@ -235,7 +235,7 @@ const Footer = () => {
                 className="flex items-center space-x-2 text-gray-400 text-sm"
                 whileHover={{ scale: 1.05 }}
               >
-                <span>© {currentYear} ArtCloud. Made with</span>
+                <span>© {currentYear} GalleryPro. Made with</span>
                 <motion.div
                   animate={{
                     scale: [1, 1.2, 1],

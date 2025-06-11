@@ -21,9 +21,6 @@ import { UserRole } from "@/types/auth";
 
 const navigationItems = [
   { label: "Home", href: "/", icon: Sparkles },
-  // { label: "Artists", href: "/artists", icon: Users },
-  // Gallery nav hidden for artists; replaced below
-  // { label: "Gallery", href: "/gallery", icon: Camera },
   { label: "About", href: "/about", icon: User },
   { label: "Contact", href: "/contact", icon: ArrowRight },
 ];
@@ -148,7 +145,7 @@ export default function Navbar() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  ArtCloud
+                  GalleryPro
                 </motion.span>
                 <motion.span
                   className={`text-xs ${textColorClass} opacity-75 font-medium`}

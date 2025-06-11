@@ -441,7 +441,7 @@ export default function DashboardPage() {
                 {getWelcomeMessage()}, {user?.firstName}!
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Welcome to your ArtCloud dashboard. Here's what's happening with
+                Welcome to your GalleryPro dashboard. Here's what's happening with
                 your galleries today.
               </Typography>
             </Box>
@@ -483,7 +483,7 @@ export default function DashboardPage() {
 
               {/* Recent Galleries */}
 
-              {role !== UserRole.ARTIST && (
+              {/* {role !== UserRole.ARTIST && (
               <Grid item xs={12} md={8}>
                 <Card>
                   <CardContent>
@@ -572,7 +572,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              )}
+              )} */}
             
             </Grid>
 

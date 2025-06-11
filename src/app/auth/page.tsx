@@ -173,7 +173,7 @@ export default function AuthPage() {
               </div>
               <div>
                 <h1 className="text-5xl lg:text-6xl font-bold text-white">
-                  ArtCloud
+                  GalleryPro
                 </h1>
                 <p className="text-purple-200 text-lg font-medium">
                   Gallery Management System

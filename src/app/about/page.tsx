@@ -46,9 +46,9 @@ export default function About() {
 
   const team = [
     {
-      name: "Sarah Johnson",
+      name: "Taranjeet",
       role: "Founder & CEO",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b593?w=300&h=300&fit=crop&crop=face",
+      image: "https://taranjeet10.s3.us-east-2.amazonaws.com/1ac9fd38-0f19-45f0-8b62-39eae5db05e6_Picsart_24-09-29_12-32-08-446%20%281%29.jpg",
       bio: "Former gallery owner with 15+ years in the art industry. Passionate about democratizing art access."
     },
     {
@@ -111,7 +111,7 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
           >
-            About ArtCloud
+            About GalleryPro
           </motion.h1>
           <motion.p
             className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed"
@@ -139,7 +139,7 @@ export default function About() {
                 Our Mission
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                At ArtCloud, we believe that art should be accessible to everyone. Our mission is to bridge the gap between artists and art lovers by providing a comprehensive platform that simplifies gallery management while enhancing the art discovery experience.
+                At GalleryPro, we believe that art should be accessible to everyone. Our mission is to bridge the gap between artists and art lovers by providing a comprehensive platform that simplifies gallery management while enhancing the art discovery experience.
               </p>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 We're committed to supporting artists at every stage of their career, from emerging talents to established professionals, by providing them with the tools they need to showcase their work and manage their artistic business effectively.
@@ -328,7 +328,7 @@ export default function About() {
             Ready to Transform Your Art Business?
           </h2>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Join thousands of artists and galleries who have already revolutionized their workflow with ArtCloud.
+            Join thousands of artists and galleries who have already revolutionized their workflow with GalleryPro.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
@@ -351,7 +351,7 @@ export default function About() {
         </motion.div>
       </section>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

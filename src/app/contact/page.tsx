@@ -57,22 +57,22 @@ export default function Contact() {
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email Us",
-      content: "hello@artcloud.com",
+      content: "taran100010@gmail.com",
       description: "Send us an email anytime",
       color: "from-blue-500 to-cyan-500"
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Call Us",
-      content: "+1 (555) 123-4567",
+      content: "+49 (176) 303-20534",
       description: "Mon-Fri 9AM-6PM EST",
       color: "from-green-500 to-emerald-500"
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Visit Us",
-      content: "123 Art Street, Gallery District",
-      description: "New York, NY 10001",
+      content: "123 SRH Art Gallery",
+      description: "Heidelberg, HD 69123",
       color: "from-purple-500 to-pink-500"
     },
     {
@@ -86,7 +86,7 @@ export default function Contact() {
 
   const faqs = [
     {
-      question: "How do I get started with ArtCloud?",
+      question: "How do I get started with GalleryPro?",
       answer: "Simply create an account and choose your role (Artist, Gallery Owner, or Collector). We'll guide you through the setup process."
     },
     {
@@ -359,7 +359,7 @@ export default function Contact() {
                   <div className="text-center">
                     <MapPin className="w-12 h-12 text-purple-600 mx-auto mb-2" />
                     <p className="text-gray-600">Interactive Map</p>
-                    <p className="text-sm text-gray-500">123 Art Street, Gallery District</p>
+                    <p className="text-sm text-gray-500">123 SRH Art Gallery</p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -371,18 +371,18 @@ export default function Contact() {
                       <p className="text-gray-600 text-sm">Saturday: 10:00 AM - 4:00 PM</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  {/* <div className="flex items-center space-x-3">
                     <Globe className="w-5 h-5 text-purple-600" />
                     <div>
                       <p className="font-semibold text-gray-900">Global Presence</p>
                       <p className="text-gray-600 text-sm">Serving 50+ countries worldwide</p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
               {/* FAQ Section */}
-              <div className="bg-white rounded-2xl shadow-2xl p-8">
+              {/* <div className="bg-white rounded-2xl shadow-2xl p-8">
                 <h3 className="text-2xl font-bold mb-6 text-gray-900">
                   Frequently Asked Questions
                 </h3>
@@ -405,7 +405,7 @@ export default function Contact() {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </motion.div>
           </div>
         </div>
@@ -424,7 +424,7 @@ export default function Contact() {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-white/90 mb-8 leading-relaxed">
-            Join thousands of artists and galleries who trust ArtCloud for their gallery management needs.
+            Join thousands of artists and galleries who trust GalleryPro for their gallery management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
@@ -447,7 +447,7 @@ export default function Contact() {
         </motion.div>
       </section>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

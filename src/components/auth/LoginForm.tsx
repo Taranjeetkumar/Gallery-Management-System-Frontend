@@ -58,7 +58,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
       const result = await dispatch(loginUser(data));
 
       console.log("fbhb : : ",result);
-      
+
       if (loginUser.fulfilled.match(result)) {
         router.push("/dashboard");
       }
@@ -88,7 +88,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
           <Sparkles className="w-8 h-8 text-white" />
         </motion.div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-        <p className="text-gray-600">Sign in to your ArtCloud account</p>
+        <p className="text-gray-600">Sign in to your GalleryPro account</p>
       </motion.div>
 
       <AnimatePresence>

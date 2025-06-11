@@ -130,7 +130,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
           Create Account
         </h1>
         <p className="text-gray-600">
-          Join ArtCloud and start managing your art collection
+          Join GalleryPro and start managing your art collection
         </p>
       </motion.div>
 
