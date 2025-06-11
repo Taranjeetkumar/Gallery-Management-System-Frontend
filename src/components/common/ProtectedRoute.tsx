@@ -17,11 +17,11 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRoles,
-}) => {
+}:any) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, user, isLoading } = useAppSelector(
-    (state) => state.auth,
+  const { isAuthenticated, user,role, isLoading } = useAppSelector(
+    (state:any) => state.auth,
   );
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check role-based access
   useEffect(() => {
     if (user && requiredRoles && requiredRoles.length > 0) {
-      if (!requiredRoles.includes(user.role)) {
+      if (!requiredRoles.includes(role)) {
         // Redirect to dashboard if user doesn't have required role
         router.push("/dashboard");
       }

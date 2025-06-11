@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { type UserRole, roleLabels } from "@/types/user";
+import { UserRole } from "@/types/auth";
+
 
 const navigationItems = [
   { label: "Home", href: "/", icon: Sparkles },

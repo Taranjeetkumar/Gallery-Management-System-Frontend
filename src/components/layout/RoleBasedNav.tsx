@@ -36,9 +36,9 @@ const navigationItems: NavigationItem[] = [
     roles: [UserRole.USER],
   },
   {
-    label: 'Favorites & Inquiries',
-    icon: <InfoIcon />,
-    path: '/favorites',
+    label: 'My Profile',
+    icon: <BrushIcon />,
+    path: '/account/profile',
     roles: [UserRole.USER],
   },
 
@@ -61,12 +61,7 @@ const navigationItems: NavigationItem[] = [
     path: '/artworks',
     roles: [UserRole.ARTIST],
   },
-  {
-    label: 'My Events & Metrics',
-    icon: <EventIcon />,
-    path: '/artist/events',
-    roles: [UserRole.ARTIST],
-  },
+  
 
   // 3. Gallery Manager
   {
@@ -99,39 +94,7 @@ const navigationItems: NavigationItem[] = [
     path: '/galleries',
     roles: [UserRole.GALLERY_MANAGER],
   },
-  {
-    label: 'Contacts & Events',
-    icon: <EventIcon />,
-    path: '/manager/contacts',
-    roles: [UserRole.GALLERY_MANAGER],
-  },
   
-
-  // 4. Admin
-  {
-    label: 'User & Role Admin',
-    icon: <SecurityIcon />,
-    path: '/admin/users',
-    roles: [UserRole.ADMIN],
-  },
-  {
-    label: 'System Settings',
-    icon: <SettingsIcon />,
-    path: '/admin/settings',
-    roles: [UserRole.ADMIN],
-  },
-  {
-    label: 'Audit & Compliance',
-    icon: <SecurityIcon />,
-    path: '/admin/audit',
-    roles: [UserRole.ADMIN],
-  },
-  {
-    label: 'Data & Reports',
-    icon: <InfoIcon />,
-    path: '/admin/data',
-    roles: [UserRole.ADMIN],
-  },
 ]
 
 interface RoleBasedNavProps {

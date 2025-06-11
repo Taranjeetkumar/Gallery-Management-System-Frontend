@@ -6,14 +6,23 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { uploadFile } from "@/store/slices/uploadSlice";
 import { motion } from "framer-motion";
 import { FileUpload } from "@/components/common/FileUpload";
-import { Sparkles, UserCircle, UploadCloud, Pencil, BadgeCheck, Mail, Phone, MapPin } from "lucide-react";
-import { type UserRole, roleLabels } from "@/types/user";
+import {
+  Sparkles,
+  UserCircle,
+  UploadCloud,
+  Pencil,
+  BadgeCheck,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { UserRole } from "@/types/user";
 import { getCurrentUser, updateUserProfile } from "@/store/slices/authSlice";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
-  const { user, isLoading } = useAppSelector((state) => state.auth);
+  const { user, role, isLoading } = useAppSelector((state) => state.auth);
   const [profile, setProfile] = useState(user || {});
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar || "");
   const [editMode, setEditMode] = useState(false);
@@ -37,8 +46,8 @@ export default function ProfilePage() {
     e.preventDefault();
     let avatar = profile.avatar;
     if (avatarFile) {
-      const response:any = await dispatch(uploadFile({ file: avatarFile }));
-      console.log("gf : ",response);
+      const response: any = await dispatch(uploadFile({ file: avatarFile }));
+      console.log("gf : ", response);
       avatar = response?.payload?.data?.fileUrl || avatar;
     }
     await dispatch(updateUserProfile({ ...profile, avatar }));
@@ -81,7 +90,11 @@ export default function ProfilePage() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => e.target.files && e.target.files[0] && handleAvatarChange(e.target.files[0])}
+                    onChange={(e) =>
+                      e.target.files &&
+                      e.target.files[0] &&
+                      handleAvatarChange(e.target.files[0])
+                    }
                   />
                 </label>
               )}
@@ -94,12 +107,20 @@ export default function ProfilePage() {
                 Profile
               </span>
               {!editMode && (
-                <button type="button" onClick={() => setEditMode(true)} className="ml-2 text-pink-500/70 hover:text-pink-600 transition">
+                <button
+                  type="button"
+                  onClick={() => setEditMode(true)}
+                  className="ml-2 text-pink-500/70 hover:text-pink-600 transition"
+                >
                   <Pencil size={18} />
                 </button>
               )}
               {profile.isEmailVerified && (
-                <BadgeCheck size={22} className="ml-1 text-emerald-500" title="Email Verified" />
+                <BadgeCheck
+                  size={22}
+                  className="ml-1 text-emerald-500"
+                  title="Email Verified"
+                />
               )}
             </div>
             <label className="flex flex-col text-violet-900">
@@ -108,7 +129,9 @@ export default function ProfilePage() {
                 disabled={!editMode}
                 className="border rounded-lg px-3 py-1 focus:outline-pink-400 bg-white/60 mt-1"
                 value={profile.fullname || ""}
-                onChange={e => setProfile({ ...profile, name: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, name: e.target.value })
+                }
               />
             </label>
             <div className="flex flex-col text-violet-900">
@@ -121,7 +144,7 @@ export default function ProfilePage() {
             <div className="flex flex-col text-violet-900">
               Role:
               <div className="flex items-center gap-2 border rounded-lg px-3 py-1 bg-white/60 mt-1 text-gray-700">
-                {roleLabels[profile.roles as UserRole] || profile.role}
+                {role}
               </div>
             </div>
             <label className="flex flex-col text-violet-900">
@@ -130,7 +153,9 @@ export default function ProfilePage() {
                 disabled={!editMode}
                 className="border rounded-lg px-3 py-1 focus:outline-pink-400 bg-white/60 mt-1"
                 value={profile.phone || ""}
-                onChange={e => setProfile({ ...profile, phone: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, phone: e.target.value })
+                }
               />
             </label>
             <label className="flex flex-col text-violet-900">
@@ -139,7 +164,9 @@ export default function ProfilePage() {
                 disabled={!editMode}
                 className="border rounded-lg px-3 py-1 focus:outline-pink-400 bg-white/60 mt-1"
                 value={profile.address || ""}
-                onChange={e => setProfile({ ...profile, address: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, address: e.target.value })
+                }
               />
             </label>
             <label className="flex flex-col text-violet-900">
@@ -148,7 +175,9 @@ export default function ProfilePage() {
                 disabled={!editMode}
                 className="border rounded-lg px-3 py-1 focus:outline-pink-400 bg-white/60 mt-1 resize-none"
                 value={profile.bio || ""}
-                onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                onChange={(e) =>
+                  setProfile({ ...profile, bio: e.target.value })
+                }
               />
             </label>
             {/* You could add createdAt/updatedAt info cards here if you want */}

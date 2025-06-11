@@ -1,8 +1,8 @@
 export enum UserRole {
-  ADMIN = "admin",
-  GALLERY_OWNER = "gallery_owner",
-  ARTIST = "ROLE_ARTIST",
-  CUSTOMER = "customer",
+  ADMIN = "ADMIN",
+  GALLERY_MANAGER = "GALLERY MANAGER",
+  ARTIST = "ARTIST",
+  CUSTOMER = "USER",
 }
 
 export interface User {
