@@ -93,6 +93,7 @@ export default function BrowseArtworksPage() {
   const [paymentInfo, setPaymentInfo] = useState({
     cardNumber: "",
     expiry: "",
+    expiry: "",
     cvv: "",
   });
   const [paymentErrors, setPaymentErrors] = useState({
@@ -164,65 +165,37 @@ export default function BrowseArtworksPage() {
     );
   };
 
-  const initiatePayment = async (artwork: any) => {
-    setIsPaymentProcessing(true);
+   const initiatePayment = async (artwork: any) => {
+    // setIsPaymentProcessing(true);
 
-    try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock Razorpay integration
-      const options = {
-        key: "rzp_test_1234567890", // Demo key
-        amount: artwork.price * 100, // Amount in paise
-        currency: "INR",
-        name: "Art Gallery",
-        description: `Purchase of "${artwork.title}"`,
-        image: artwork.imageUrl,
-        order_id: `order_${Date.now()}`, // Mock order ID
-        handler: function (response: any) {
-          // Payment success
-          alert(
-            `Payment successful! Transaction ID: ${response.razorpay_payment_id}`
-          );
-          setIsPaymentProcessing(false);
-        },
-        prefill: {
-          name: user?.name || "Art Lover",
-          email: user?.email || "user@example.com",
-          contact: "9999999999",
-        },
-        notes: {
-          artwork_id: artwork.id,
-          artwork_title: artwork.title,
-        },
-        theme: {
-          color: "#7c3aed",
-        },
-        modal: {
-          ondismiss: function () {
-            setIsPaymentProcessing(false);
-          },
-        },
-      };
-
-      // For demo purposes, we'll simulate the payment
-      const mockPayment = confirm(
-        `Mock Payment for "${artwork.title}"\nAmount: $${artwork.price}\n\nClick OK to simulate successful payment, Cancel to simulate failure.`
-      );
-
-      if (mockPayment) {
-        alert(
-          `Payment successful! You have purchased "${artwork.title}" for $${artwork.price}`
-        );
-      } else {
-        alert("Payment cancelled");
-      }
-    } catch (error) {
-      alert("Payment failed. Please try again.");
-    } finally {
-      setIsPaymentProcessing(false);
-    }
+    // Load Razorpay script
+    const loadScript = (src: string) => new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+    const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+    if (!res) { alert('Razorpay SDK failed to load.'); return; }
+    const options = {
+      key: 'rzp_test_1234567890',
+      amount: artwork.price * 100,
+      currency: 'INR',
+      name: 'Art Gallery Demo',
+      description: `Purchase of "${artwork.title}"`,
+      image: artwork.imageUrl,
+      order_id: `order_demo_${Date.now()}`,
+      handler: async (response: any) => {
+        alert(`Payment successful! ID: ${response.razorpay_payment_id}`);
+        await handlePaymentSubmit(artwork);
+      },
+      prefill: { name: user?.name, email: user?.email, contact: user?.phone || '' },
+      notes: {},
+      theme: { color: '#7c3aed' }
+    };
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   };
 
   const openPaymentDialog = (artwork: any) => {
@@ -343,7 +316,7 @@ export default function BrowseArtworksPage() {
               </div>
 
               {/* Search, Filters and View Toggle */}
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              {/* <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -386,10 +359,10 @@ export default function BrowseArtworksPage() {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Filter Panel */}
-              <AnimatePresence>
+              {/* <AnimatePresence>
                 {isFilterOpen && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -515,7 +488,7 @@ export default function BrowseArtworksPage() {
                     </div>
                   </motion.div>
                 )}
-              </AnimatePresence>
+              </AnimatePresence> */}
             </motion.div>
 
             {/* Artworks Grid/List */}

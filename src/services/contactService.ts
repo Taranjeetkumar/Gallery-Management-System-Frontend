@@ -6,6 +6,10 @@ class ContactService {
     return await apiService.get("/contacts", { params });
   }
 
+  async postContactForm(params: any) {
+    return await apiService.post("/contactus", params);
+  }
+
   async getContactById(id: number): Promise<Contact> {
     return await apiService.get(`/contacts/${id}`);
   }
@@ -14,7 +18,10 @@ class ContactService {
     return await apiService.post("/contacts", data);
   }
 
-  async updateContact(id: number, data: Partial<ContactFormData>): Promise<Contact> {
+  async updateContact(
+    id: number,
+    data: Partial<ContactFormData>
+  ): Promise<Contact> {
     return await apiService.put(`/contacts/${id}`, data);
   }
 

@@ -9,30 +9,33 @@ import {
   Clock,
   Globe,
   MessageCircle,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import contactService from "@/services/contactService";
 
 export default function Contact() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     subject: "",
-    message: ""
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -40,8 +43,10 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    let data = await contactService.postContactForm(formData);
+
     // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -49,7 +54,7 @@ export default function Contact() {
     // Reset form after 3 seconds
     setTimeout(() => {
       setIsSubmitted(false);
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ fullName: "", email: "", subject: "", message: "" });
     }, 3000);
   };
 
@@ -59,48 +64,52 @@ export default function Contact() {
       title: "Email Us",
       content: "taran100010@gmail.com",
       description: "Send us an email anytime",
-      color: "from-blue-500 to-cyan-500"
+      color: "from-blue-500 to-cyan-500",
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Call Us",
       content: "+49 (176) 303-20534",
       description: "Mon-Fri 9AM-6PM EST",
-      color: "from-green-500 to-emerald-500"
+      color: "from-green-500 to-emerald-500",
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Visit Us",
       content: "123 SRH Art Gallery",
       description: "Heidelberg, HD 69123",
-      color: "from-purple-500 to-pink-500"
+      color: "from-purple-500 to-pink-500",
     },
     {
       icon: <MessageCircle className="w-6 h-6" />,
       title: "Live Chat",
       content: "Available 24/7",
       description: "Get instant support",
-      color: "from-orange-500 to-red-500"
-    }
+      color: "from-orange-500 to-red-500",
+    },
   ];
 
   const faqs = [
     {
       question: "How do I get started with GalleryPro?",
-      answer: "Simply create an account and choose your role (Artist, Gallery Owner, or Collector). We'll guide you through the setup process."
+      answer:
+        "Simply create an account and choose your role (Artist, Gallery Owner, or Collector). We'll guide you through the setup process.",
     },
     {
       question: "What are the pricing plans?",
-      answer: "We offer flexible pricing plans starting from free for individual artists to enterprise solutions for large galleries."
+      answer:
+        "We offer flexible pricing plans starting from free for individual artists to enterprise solutions for large galleries.",
     },
     {
       question: "Can I import my existing artwork data?",
-      answer: "Yes! We provide tools to help you migrate your existing artwork databases and contact lists seamlessly."
+      answer:
+        "Yes! We provide tools to help you migrate your existing artwork databases and contact lists seamlessly.",
     },
     {
       question: "Is there customer support available?",
-      answer: "Absolutely! We offer 24/7 support through live chat, email, and phone for all our users."
-    }
+      answer:
+        "Absolutely! We offer 24/7 support through live chat, email, and phone for all our users.",
+    },
   ];
 
   return (
@@ -157,7 +166,8 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            We'd love to hear from you. Send us a message and we'll respond as
+            soon as possible.
           </motion.p>
         </motion.div>
       </section>
@@ -204,9 +214,7 @@ export default function Contact() {
                 <p className="text-purple-600 font-semibold mb-1">
                   {info.content}
                 </p>
-                <p className="text-gray-600 text-sm">
-                  {info.description}
-                </p>
+                <p className="text-gray-600 text-sm">{info.description}</p>
               </motion.div>
             ))}
           </div>
@@ -229,7 +237,8 @@ export default function Contact() {
                   Send Us a Message
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  Fill out the form below and we'll get back to you within 24 hours.
+                  Fill out the form below and we'll get back to you within 24
+                  hours.
                 </p>
 
                 {isSubmitted ? (
@@ -258,14 +267,17 @@ export default function Contact() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Full Name
                         </label>
                         <input
                           type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
+                          id="fullName"
+                          name="fullName"
+                          value={formData.fullName}
                           onChange={handleInputChange}
                           required
                           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
@@ -273,7 +285,10 @@ export default function Contact() {
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Email Address
                         </label>
                         <input
@@ -289,7 +304,10 @@ export default function Contact() {
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="subject"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Subject
                       </label>
                       <input
@@ -304,7 +322,10 @@ export default function Contact() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="message"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Message
                       </label>
                       <textarea
@@ -366,9 +387,15 @@ export default function Contact() {
                   <div className="flex items-center space-x-3">
                     <Clock className="w-5 h-5 text-purple-600" />
                     <div>
-                      <p className="font-semibold text-gray-900">Office Hours</p>
-                      <p className="text-gray-600 text-sm">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                      <p className="text-gray-600 text-sm">Saturday: 10:00 AM - 4:00 PM</p>
+                      <p className="font-semibold text-gray-900">
+                        Office Hours
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        Monday - Friday: 9:00 AM - 6:00 PM
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        Saturday: 10:00 AM - 4:00 PM
+                      </p>
                     </div>
                   </div>
                   {/* <div className="flex items-center space-x-3">
@@ -424,7 +451,8 @@ export default function Contact() {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-white/90 mb-8 leading-relaxed">
-            Join thousands of artists and galleries who trust GalleryPro for their gallery management needs.
+            Join thousands of artists and galleries who trust GalleryPro for
+            their gallery management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
