@@ -8,6 +8,8 @@ import {
   clearFilters,
   clearError,
 } from "@/store/slices/artworksSlice";
+
+import { updateArtwork } from "@/store/slices/artworksSlice";
 import { fetchArtists } from "@/store/slices/artistsSlice";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -47,6 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { artworkService } from "@/services/artworkService";
 
 // Mock Razorpay integration (for demo purposes)
 declare global {
@@ -78,7 +81,7 @@ export default function BrowseArtworksPage() {
   const { artworks, isLoading, error, searchQuery, filters, pagination } =
     useAppSelector((state) => state.artworks);
   const { artists } = useAppSelector((state) => state.artists);
-  const { user,role } = useAppSelector((state) => state.auth);
+  const { user, role } = useAppSelector((state) => state.auth);
 
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
@@ -86,6 +89,17 @@ export default function BrowseArtworksPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+  });
+  const [paymentErrors, setPaymentErrors] = useState({
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+  });
 
   useEffect(() => {
     dispatch(fetchArtworks({ page: 1, limit: 12 }));
@@ -141,7 +155,13 @@ export default function BrowseArtworksPage() {
 
   const clearAllFilters = () => {
     dispatch(clearFilters());
-    dispatch(fetchArtworks({ page: 1, limit: pagination.limit, filters: { isForSale: true } }));
+    dispatch(
+      fetchArtworks({
+        page: 1,
+        limit: pagination.limit,
+        filters: { isForSale: true },
+      })
+    );
   };
 
   const initiatePayment = async (artwork: any) => {
@@ -149,7 +169,7 @@ export default function BrowseArtworksPage() {
 
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Mock Razorpay integration
       const options = {
@@ -162,26 +182,28 @@ export default function BrowseArtworksPage() {
         order_id: `order_${Date.now()}`, // Mock order ID
         handler: function (response: any) {
           // Payment success
-          alert(`Payment successful! Transaction ID: ${response.razorpay_payment_id}`);
+          alert(
+            `Payment successful! Transaction ID: ${response.razorpay_payment_id}`
+          );
           setIsPaymentProcessing(false);
         },
         prefill: {
           name: user?.name || "Art Lover",
           email: user?.email || "user@example.com",
-          contact: "9999999999"
+          contact: "9999999999",
         },
         notes: {
           artwork_id: artwork.id,
-          artwork_title: artwork.title
+          artwork_title: artwork.title,
         },
         theme: {
-          color: "#7c3aed"
+          color: "#7c3aed",
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setIsPaymentProcessing(false);
-          }
-        }
+          },
+        },
       };
 
       // For demo purposes, we'll simulate the payment
@@ -190,11 +212,12 @@ export default function BrowseArtworksPage() {
       );
 
       if (mockPayment) {
-        alert(`Payment successful! You have purchased "${artwork.title}" for $${artwork.price}`);
+        alert(
+          `Payment successful! You have purchased "${artwork.title}" for $${artwork.price}`
+        );
       } else {
         alert("Payment cancelled");
       }
-
     } catch (error) {
       alert("Payment failed. Please try again.");
     } finally {
@@ -202,8 +225,104 @@ export default function BrowseArtworksPage() {
     }
   };
 
+  const openPaymentDialog = (artwork: any) => {
+    setSelectedArtwork(artwork);
+    setIsPaymentDialogOpen(true);
+  };
+  const closePaymentDialog = () => {
+    setIsPaymentDialogOpen(false);
+    setPaymentInfo({ cardNumber: "", expiry: "", cvv: "" });
+  };
+
+  const handlePaymentSubmit = async (selectedArtwork: any) => {
+    setIsPaymentProcessing(true);
+    try {
+      const {
+        title,
+        description,
+        artistId,
+        galleryId,
+        medium,
+        dimensions,
+        yearCreated,
+        price,
+        isForSale,
+        tags,
+        image,
+        imageUrl,
+        thumbnailUrl,
+      } = selectedArtwork;
+
+      let artworkData = {
+        title,
+        description,
+        artistId,
+        galleryId: !galleryId? 0 : galleryId,
+        medium,
+        dimensions,
+        yearCreated,
+        price,
+        isForSale,
+        tags,
+        image,
+        imageUrl,
+        thumbnailUrl,
+        status: "SOLD",
+      };
+
+      await dispatch(
+        updateArtwork({ id: selectedArtwork.id, data: artworkData })
+      ).unwrap();
+
+      alert(`Artwork "${selectedArtwork.title}" marked as SOLD.`);
+      dispatch(
+        fetchArtworks({
+          page: pagination.page,
+          limit: pagination.limit,
+          search: searchQuery,
+          filters,
+        })
+      );
+    } catch (e) {
+      alert("Failed to update artwork status.");
+    } finally {
+      setIsPaymentProcessing(false);
+      closePaymentDialog();
+    }
+  };
+
+  // Simple Luhn check
+  const validateCardNumber = (num: string) => {
+    const cleaned = num.replace(/\s+/g, "");
+    if (!/^[0-9]{13,19}$/.test(cleaned)) return false;
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = cleaned.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleaned.charAt(i));
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
+  const validatePayment = () => {
+    const errors: any = { cardNumber: "", expiry: "", cvv: "" };
+    if (!validateCardNumber(paymentInfo.cardNumber))
+      errors.cardNumber = "Invalid card number";
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentInfo.expiry))
+      errors.expiry = "Expiry must be MM/YY";
+    if (!/^[0-9]{3}$/.test(paymentInfo.cvv))
+      errors.cvv = "CVV must be 3 digits";
+    setPaymentErrors(errors);
+    return !errors.cardNumber && !errors.expiry && !errors.cvv;
+  };
+
   return (
-    <ProtectedRoute >
+    <ProtectedRoute>
       <DashboardLayout>
         <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-blue-50 p-6">
           <div className="max-w-7xl mx-auto">
@@ -218,7 +337,8 @@ export default function BrowseArtworksPage() {
                   Discover Beautiful Artworks
                 </h1>
                 <p className="text-gray-600 text-xl max-w-2xl mx-auto">
-                  Explore our curated collection of stunning artworks from talented artists around the world
+                  Explore our curated collection of stunning artworks from
+                  talented artists around the world
                 </p>
               </div>
 
@@ -251,15 +371,15 @@ export default function BrowseArtworksPage() {
                   </Button>
                   <div className="flex border border-purple-200 rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm">
                     <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                      onClick={() => setViewMode('grid')}
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      onClick={() => setViewMode("grid")}
                       className="rounded-none"
                     >
                       <Grid3X3 className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
-                      onClick={() => setViewMode('list')}
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      onClick={() => setViewMode("list")}
                       className="rounded-none"
                     >
                       <List className="w-4 h-4" />
@@ -334,7 +454,9 @@ export default function BrowseArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                yearFrom: e.target.value ? parseInt(e.target.value) : null,
+                                yearFrom: e.target.value
+                                  ? parseInt(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -346,7 +468,9 @@ export default function BrowseArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                yearTo: e.target.value ? parseInt(e.target.value) : null,
+                                yearTo: e.target.value
+                                  ? parseInt(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -365,7 +489,9 @@ export default function BrowseArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                priceFrom: e.target.value ? parseFloat(e.target.value) : null,
+                                priceFrom: e.target.value
+                                  ? parseFloat(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -377,7 +503,9 @@ export default function BrowseArtworksPage() {
                             onChange={(e) =>
                               handleFilterChange({
                                 ...filters,
-                                priceTo: e.target.value ? parseFloat(e.target.value) : null,
+                                priceTo: e.target.value
+                                  ? parseFloat(e.target.value)
+                                  : null,
                               })
                             }
                             className="w-full"
@@ -430,7 +558,11 @@ export default function BrowseArtworksPage() {
                   <Button
                     onClick={() =>
                       dispatch(
-                        fetchArtworks({ page: 1, limit: pagination.limit, filters: { isForSale: true } })
+                        fetchArtworks({
+                          page: 1,
+                          limit: pagination.limit,
+                          filters: { isForSale: true },
+                        })
                       )
                     }
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
@@ -498,7 +630,13 @@ export default function BrowseArtworksPage() {
                                     : "bg-white/90 text-red-500 hover:bg-white"
                                 }`}
                               >
-                                <Heart className={`w-4 h-4 ${favorites.has(artwork.id) ? "fill-current" : ""}`} />
+                                <Heart
+                                  className={`w-4 h-4 ${
+                                    favorites.has(artwork.id)
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
+                                />
                               </motion.button>
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
@@ -542,7 +680,7 @@ export default function BrowseArtworksPage() {
                                 {artwork.yearCreated}
                               </div>
                               {artwork.price && (
-                                <div className="flex items-center text-lg font-bold text-green-600">
+                                <div className="flex items-center font-bold text-green-600">
                                   <DollarSign className="w-5 h-5 mr-1" />
                                   {artwork.price.toLocaleString()}
                                 </div>
@@ -555,21 +693,21 @@ export default function BrowseArtworksPage() {
                               </div>
                             )}
 
-                            {/* Buy Button */}
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => initiatePayment(artwork)}
-                              disabled={isPaymentProcessing}
-                              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isPaymentProcessing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <ShoppingBag className="w-4 h-4" />
+                            {/* Buy Now button */}
+
+                            {artwork.status == "ACTIVE" &&
+                              role === UserRole.CUSTOMER && (
+                                <Button
+                                  className="mt-4 w-full"
+                                  onClick={() => openPaymentDialog(artwork)}
+                                  disabled={isPaymentProcessing}
+                                >
+                                  Buy Now
+                                </Button>
                               )}
-                              {isPaymentProcessing ? "Processing..." : "Buy Now"}
-                            </motion.button>
+                            {artwork.status == "SOLD" && (
+                              <Badge variant="outline">Sold</Badge>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -637,13 +775,19 @@ export default function BrowseArtworksPage() {
                                   : "bg-red-100 text-red-600 hover:bg-red-200"
                               }`}
                             >
-                              <Heart className={`w-4 h-4 ${favorites.has(artwork.id) ? "fill-current" : ""}`} />
+                              <Heart
+                                className={`w-4 h-4 ${
+                                  favorites.has(artwork.id)
+                                    ? "fill-current"
+                                    : ""
+                                }`}
+                              />
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => openViewDialog(artwork)}
-                              className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors"
+                              className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors shadow-sm"
                             >
                               <Eye className="w-4 h-4" />
                             </motion.button>
@@ -835,8 +979,16 @@ export default function BrowseArtworksPage() {
                             : "bg-red-100 text-red-600 hover:bg-red-200"
                         }`}
                       >
-                        <Heart className={`w-5 h-5 inline mr-2 ${favorites.has(selectedArtwork.id) ? "fill-current" : ""}`} />
-                        {favorites.has(selectedArtwork.id) ? "Remove from Favorites" : "Add to Favorites"}
+                        <Heart
+                          className={`w-5 h-5 inline mr-2 ${
+                            favorites.has(selectedArtwork.id)
+                              ? "fill-current"
+                              : ""
+                          }`}
+                        />
+                        {favorites.has(selectedArtwork.id)
+                          ? "Remove from Favorites"
+                          : "Add to Favorites"}
                       </motion.button>
 
                       <motion.button
@@ -860,6 +1012,79 @@ export default function BrowseArtworksPage() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Payment Dialog */}
+        {isPaymentDialogOpen && (
+          <Dialog open onOpenChange={closePaymentDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Enter Payment Details</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Card Number"
+                  maxLength={19}
+                  value={paymentInfo.cardNumber}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 19);
+                    setPaymentInfo({ ...paymentInfo, cardNumber: v });
+                    setPaymentErrors({ ...paymentErrors, cardNumber: "" });
+                  }}
+                />
+                {paymentErrors.cardNumber && (
+                  <p className="text-red-500 text-sm">
+                    {paymentErrors.cardNumber}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    value={paymentInfo.expiry}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "");
+                      let formatted = raw;
+                      if (raw.length >= 3) {
+                        formatted = raw.slice(0, 2) + "/" + raw.slice(2, 4);
+                      }
+                      setPaymentInfo({ ...paymentInfo, expiry: formatted });
+                      setPaymentErrors({ ...paymentErrors, expiry: "" });
+                    }}
+                  />
+                  <Input
+                    placeholder="CVV"
+                    maxLength={3}
+                    value={paymentInfo.cvv}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 3);
+                      setPaymentInfo({ ...paymentInfo, cvv: v });
+                      setPaymentErrors({ ...paymentErrors, cvv: "" });
+                    }}
+                  />
+                </div>
+                {paymentErrors.expiry && (
+                  <p className="text-red-500 text-sm">{paymentErrors.expiry}</p>
+                )}
+                {paymentErrors.cvv && (
+                  <p className="text-red-500 text-sm">{paymentErrors.cvv}</p>
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={closePaymentDialog}
+                  disabled={isPaymentProcessing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handlePaymentSubmit(selectedArtwork)}
+                  loading={isPaymentProcessing}
+                >
+                  Pay ₹{selectedArtwork.price}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </DashboardLayout>
     </ProtectedRoute>
   );

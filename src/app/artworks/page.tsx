@@ -122,11 +122,11 @@ const artTags = [
 
 export default function ArtworksPage() {
   const dispatch = useAppDispatch();
-  const { artworks, isLoading, error, searchQuery, filters, pagination } =
-    useAppSelector((state) => state.artworks);
+  const { artworks, isLoading, error, searchQuery, filters, pagination } = useAppSelector((state) => state.artworks);
   const { artists } = useAppSelector((state) => state.artists);
   const { user } = useAppSelector((state) => state.auth);
 
+  console.log("cgdg : ", artworks);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -169,7 +169,7 @@ export default function ArtworksPage() {
   const handleSearch = (value: string) => {
     dispatch(setSearchQuery(value));
     dispatch(
-      fetchArtworks({ search: value, page: 1, limit: pagination.limit })
+      fetchArtworks({ artistId: parseInt(user.id),search: value, page: 1, limit: pagination.limit })
     );
   };
 
@@ -191,7 +191,7 @@ export default function ArtworksPage() {
   const handleFilterChange = (newFilters: any) => {
     dispatch(setFilters(newFilters));
     dispatch(
-      fetchArtworks({ filters: newFilters, page: 1, limit: pagination.limit })
+      fetchArtworks({artistId: parseInt(user.id), filters: newFilters, page: 1, limit: pagination.limit })
     );
   };
 
@@ -237,7 +237,7 @@ export default function ArtworksPage() {
         setIsCreateDialogOpen(false);
         resetForm();
         alert("Artwork created successfully!");
-        dispatch(fetchArtworks({ page: 1, limit: pagination.limit }));
+        dispatch(fetchArtworks({ artistId: parseInt(user.id),page: 1, limit: pagination.limit }));
       } else {
         alert("Failed to upload image");
       }
@@ -282,7 +282,7 @@ export default function ArtworksPage() {
       resetForm();
       alert("Artwork updated successfully!");
       dispatch(
-        fetchArtworks({ page: pagination.page, limit: pagination.limit })
+        fetchArtworks({artistId: parseInt(user.id),page: pagination.page, limit: pagination.limit })
       );
     } catch (error: any) {
       alert(error.message || "Failed to update artwork");
@@ -302,7 +302,7 @@ export default function ArtworksPage() {
         await dispatch(deleteArtwork(artworkId)).unwrap();
         alert("Artwork deleted successfully!");
         dispatch(
-          fetchArtworks({ page: pagination.page, limit: pagination.limit })
+          fetchArtworks({artistId: parseInt(user.id), page: pagination.page, limit: pagination.limit })
         );
       } catch (error: any) {
         alert(error.message || "Failed to delete artwork");
@@ -364,6 +364,7 @@ export default function ArtworksPage() {
   const handlePageChange = (page: number) => {
     dispatch(
       fetchArtworks({
+        artistId: parseInt(user.id),
         page,
         limit: pagination.limit,
         search: searchQuery,
@@ -374,7 +375,7 @@ export default function ArtworksPage() {
 
   const clearAllFilters = () => {
     dispatch(clearFilters());
-    dispatch(fetchArtworks({ page: 1, limit: pagination.limit }));
+    dispatch(fetchArtworks({ artistId: parseInt(user.id),page: 1, limit: pagination.limit }));
   };
 
   return (
@@ -621,7 +622,7 @@ export default function ArtworksPage() {
                   <Button
                     onClick={() =>
                       dispatch(
-                        fetchArtworks({ page: 1, limit: pagination.limit })
+                        fetchArtworks({artistId: parseInt(user.id), page: 1, limit: pagination.limit })
                       )
                     }
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"

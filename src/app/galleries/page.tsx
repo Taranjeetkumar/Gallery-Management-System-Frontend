@@ -515,7 +515,7 @@ export default function GalleriesPage() {
                               >
                                 <Eye className="w-4 h-4" />
                               </motion.button>
-                              <Link href={`/galleries/${gallery.id}`}>
+                              {/* <Link href={`/galleries/${gallery.id}`}>
                                 <motion.button
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
@@ -523,7 +523,7 @@ export default function GalleriesPage() {
                                 >
                                   <BarChart3 className="w-4 h-4" />
                                 </motion.button>
-                              </Link>
+                              </Link> */}
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
@@ -571,7 +571,7 @@ export default function GalleriesPage() {
                                   : "bg-red-100 text-red-700 border border-red-200"
                               }
                             >
-                              {gallery.isActive ? "Active" : "Inactive"}
+                              {"Active" }
                             </Badge>
                             <div className="flex items-center text-xs text-gray-500">
                               <Calendar className="w-3 h-3 mr-1" />

@@ -2,7 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
-  fetchArtists,
+  fetchArtistsByCreator,
   createArtist,
   updateArtist,
   deleteArtist,
@@ -98,6 +98,7 @@ export default function ArtistsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  console.log(artists, "gdvjhv");
   const [formData, setFormData] = useState<ArtistFormData>({
     fullname: "",
     email: "",
@@ -113,7 +114,7 @@ export default function ArtistsPage() {
   });
 
   useEffect(() => {
-    dispatch(fetchArtists({ page: 1, limit: 12 }));
+    dispatch(fetchArtistsByCreator({ page: 1, limit: 12 }));
   }, [dispatch]);
 
   useEffect(() => {
@@ -125,13 +126,19 @@ export default function ArtistsPage() {
 
   const handleSearch = (value: string) => {
     dispatch(setSearchQuery(value));
-    dispatch(fetchArtists({ search: value, page: 1, limit: pagination.limit }));
+    dispatch(
+      fetchArtistsByCreator({ search: value, page: 1, limit: pagination.limit })
+    );
   };
 
   const handleFilterChange = (newFilters: any) => {
     dispatch(setFilters(newFilters));
     dispatch(
-      fetchArtists({ filters: newFilters, page: 1, limit: pagination.limit })
+      fetchArtistsByCreator({
+        filters: newFilters,
+        page: 1,
+        limit: pagination.limit,
+      })
     );
   };
 
@@ -150,7 +157,7 @@ export default function ArtistsPage() {
       setIsCreateDialogOpen(false);
       resetForm();
       alert("Artist created successfully!");
-      dispatch(fetchArtists({ page: 1, limit: pagination.limit }));
+      dispatch(fetchArtistsByCreator({ page: 1, limit: pagination.limit }));
     } catch (error: any) {
       alert(error.message || "Failed to create artist");
     }
@@ -159,7 +166,7 @@ export default function ArtistsPage() {
   const handleUpdateArtist = async () => {
     if (!selectedArtist) return;
 
-   if (
+    if (
       !formData.fullname.trim() ||
       !formData.email.trim() ||
       !formData.artisticStyle
@@ -176,7 +183,10 @@ export default function ArtistsPage() {
       resetForm();
       alert("Artist updated successfully!");
       dispatch(
-        fetchArtists({ page: pagination.page, limit: pagination.limit })
+        fetchArtistsByCreator({
+          page: pagination.page,
+          limit: pagination.limit,
+        })
       );
     } catch (error: any) {
       alert(error.message || "Failed to update artist");
@@ -193,7 +203,10 @@ export default function ArtistsPage() {
         await dispatch(deleteArtist(artistId)).unwrap();
         alert("Artist deleted successfully!");
         dispatch(
-          fetchArtists({ page: pagination.page, limit: pagination.limit })
+          fetchArtistsByCreator({
+            page: pagination.page,
+            limit: pagination.limit,
+          })
         );
       } catch (error: any) {
         alert(error.message || "Failed to delete artist");
@@ -250,7 +263,7 @@ export default function ArtistsPage() {
 
   const handlePageChange = (page: number) => {
     dispatch(
-      fetchArtists({
+      fetchArtistsByCreator({
         page,
         limit: pagination.limit,
         search: searchQuery,
@@ -261,7 +274,7 @@ export default function ArtistsPage() {
 
   const clearAllFilters = () => {
     dispatch(clearFilters());
-    dispatch(fetchArtists({ page: 1, limit: pagination.limit }));
+    dispatch(fetchArtistsByCreator({ page: 1, limit: pagination.limit }));
   };
 
   return (
@@ -475,7 +488,10 @@ export default function ArtistsPage() {
                   <Button
                     onClick={() =>
                       dispatch(
-                        fetchArtists({ page: 1, limit: pagination.limit })
+                        fetchArtistsByCreator({
+                          page: 1,
+                          limit: pagination.limit,
+                        })
                       )
                     }
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
@@ -518,7 +534,7 @@ export default function ArtistsPage() {
                       : "grid-cols-1"
                   }`}
                 >
-                  {artists?.map((artist, index) => (
+                  {artists?.map((artist: any, index: any) => (
                     <motion.div
                       key={artist.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -537,7 +553,7 @@ export default function ArtistsPage() {
                             <Avatar className="w-16 h-16 border-4 border-gradient-to-r from-purple-400 to-pink-400">
                               <AvatarImage src={artist.profileImage} />
                               <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-xl font-bold">
-                                {artist.name.charAt(0)}
+                                {artist?.name?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex space-x-1">
@@ -571,7 +587,7 @@ export default function ArtistsPage() {
                           </div>
 
                           <h3 className="font-bold text-lg text-gray-800 mb-2">
-                            {artist.name}
+                            {artist?.fullname}
                           </h3>
 
                           <div className="space-y-2 mb-4">
@@ -587,12 +603,12 @@ export default function ArtistsPage() {
                             )}
                             <div className="flex items-center text-sm text-gray-600">
                               <Star className="w-4 h-4 mr-2 text-yellow-500" />
-                              {artist.totalArtworks || 0} artworks
+                              {artist?.artworkCount || 0} artworks
                             </div>
                           </div>
 
                           <div className="flex flex-wrap gap-1 mb-4">
-                            {artist.specializations
+                            {artist?.specializations
                               ?.slice(0, 2)
                               .map((spec: string) => (
                                 <Badge
@@ -603,7 +619,7 @@ export default function ArtistsPage() {
                                   {spec}
                                 </Badge>
                               ))}
-                            {artist.specializations?.length > 2 && (
+                            {artist?.specializations?.length > 2 && (
                               <Badge
                                 variant="outline"
                                 className="text-xs text-gray-500"
@@ -644,14 +660,14 @@ export default function ArtistsPage() {
                         <>
                           <Avatar className="w-16 h-16 border-4 border-gradient-to-r from-purple-400 to-pink-400">
                             <AvatarImage src={artist.profileImage} />
-                            <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-xl font-bold">
-                              {artist.name.charAt(0)}
+                            <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-2xl font-bold">
+                              {artist?.fullname?.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <h3 className="font-bold text-lg text-gray-800">
-                                {artist.name}
+                                {artist.fullname}
                               </h3>
                               <Badge
                                 variant={
@@ -679,7 +695,7 @@ export default function ArtistsPage() {
                               )}
                               <div className="flex items-center">
                                 <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                                {artist.totalArtworks || 0} artworks
+                                {artist?.artworkCount || 0} artworks
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-1">
@@ -1072,7 +1088,7 @@ export default function ArtistsPage() {
                     <Avatar className="w-24 h-24 border-4 border-gradient-to-r from-purple-400 to-pink-400">
                       <AvatarImage src={selectedArtist.profileImage} />
                       <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-2xl font-bold">
-                        {selectedArtist.name.charAt(0)}
+                        {selectedArtist?.fullname?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>

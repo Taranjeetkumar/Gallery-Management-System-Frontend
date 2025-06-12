@@ -8,6 +8,9 @@ import { fetchArtworks } from "@/store/slices/artworksSlice";
 import { UserRole } from "@/types/auth";
 import type { Artwork, CreateGalleryData, Gallery } from "@/types/gallery";
 import {
+  fetchArtistsByCreator,
+} from "@/store/slices/artistsSlice";
+import {
   Add,
   Delete,
   Edit,
@@ -156,6 +159,7 @@ export default function DashboardPage() {
   const { galleries, isLoading, error } = useAppSelector(
     (state) => state.gallery
   );
+  const { artists} = useAppSelector((state) => state.artists);
   const router = useRouter();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { artworks } = useAppSelector((state) => state.artworks);
@@ -178,9 +182,12 @@ export default function DashboardPage() {
       console.log("gfgyugyufgyufg ", role, "fghdyt ", UserRole.ARTIST);
       // only fetch galleries for non-artist roles
       if (role != "ROLE_ARTIST") {
-        dispatch(fetchGalleries());
+    dispatch(fetchGalleries({artistId: parseInt(user.id)}));
       }
     }
+
+      dispatch(fetchArtistsByCreator({ page: 1, limit: 12 }));
+    
     // always fetch artworks
     dispatch(fetchArtworks());
   }, [dispatch, user]);
@@ -201,7 +208,9 @@ export default function DashboardPage() {
   };
 
   const getRoleBasedStats = () => {
-    const userGalleries = galleries?.filter((g) => g.ownerId === user?.id);
+
+    console.log("bgdfsdsss ::  ", galleries)
+    // const userGalleries = galleries?.filter((g) => g.ownerId === user?.id);
     const userArtworks = artworks?.filter((a) => a.artistId === user?.id);
     const publicGalleries = galleries?.filter((g) => g.isPublic);
     const artistGalleries = galleries?.filter((g) => g?.artistId === user?.id);
@@ -242,7 +251,7 @@ export default function DashboardPage() {
         return [
           {
             title: "My Galleries",
-            value: userGalleries?.length || 0,
+            value: galleries?.length || 0,
             icon: <PhotoLibrary />,
             color: "#1976d2",
             change: "+2",
@@ -255,19 +264,15 @@ export default function DashboardPage() {
             change: "+18",
           },
           {
-            title: "Total Views",
-            value:
-              userArtworks?.reduce(
-                (sum, a) => sum + (a.artworkCount || 0),
-                0
-              ) || 0,
+            title: "My Artists",
+            value: artists?.length || 0,
             icon: <People />,
             color: "#ed6c02",
             change: "+3",
           },
           // {
           //   title: "Public Galleries",
-          //   value: userGalleries?.filter((g) => g.isPublic).length,
+          //   value: galleries?.filter((g) => g.isPublic).length,
           //   icon: <TrendingUp />,
           //   color: "#9c27b0",
           //   change: "+15%",

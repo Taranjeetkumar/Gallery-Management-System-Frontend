@@ -7,6 +7,11 @@ class ArtistService {
     return response?.data;
   }
 
+  async getArtistsByCreator(params: any) {
+    const response = await apiService.get("/artists/creator", { params });
+    return response?.data;
+  }
+
   async getArtistById(id: number): Promise<Artist> {
     const response = await apiService.get(`/artists/${id}`);
     return response?.data;

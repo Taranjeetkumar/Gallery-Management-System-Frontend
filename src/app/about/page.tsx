@@ -46,21 +46,21 @@ export default function About() {
 
   const team = [
     {
-      name: "Taranjeet",
+      name: "Vidur Sharma",
       role: "Founder & CEO",
-      image: "https://taranjeet10.s3.us-east-2.amazonaws.com/1ac9fd38-0f19-45f0-8b62-39eae5db05e6_Picsart_24-09-29_12-32-08-446%20%281%29.jpg",
+      image:  "https://taranjeet10.s3.us-east-2.amazonaws.com/a0bc0286-ee30-4e00-9165-a79101bc2352_IMG-20250611-WA0003.jpg",
       bio: "Former gallery owner with 15+ years in the art industry. Passionate about democratizing art access."
     },
     {
-      name: "Michael Chen",
+      name: "Taranjeet",
       role: "CTO",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
+      image: "https://taranjeet10.s3.us-east-2.amazonaws.com/1ac9fd38-0f19-45f0-8b62-39eae5db05e6_Picsart_24-09-29_12-32-08-446%20%281%29.jpg",
       bio: "Tech veteran with expertise in building scalable platforms. Art collector and technology enthusiast."
     },
     {
-      name: "Emma Williams",
+      name: "Jeevitha Kariyajjanavaru Ramesh",
       role: "Head of Design",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face",
+      image: "https://taranjeet10.s3.us-east-2.amazonaws.com/ae51d7fa-f623-4310-a33e-2c266fd2d6e4_IMG-20250612-WA0001.jpg",
       bio: "Award-winning designer focused on creating beautiful, intuitive user experiences for creative professionals."
     }
   ];
